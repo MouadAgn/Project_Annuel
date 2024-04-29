@@ -28,6 +28,8 @@ class User
     #[ORM\Column]
     private ?int $Role = null;
 
+    public const ROLE_USER = 0;
+
     #[ORM\Column]
     private ?\DateTimeImmutable $CreatedDate = null;
 

@@ -1,0 +1,12 @@
+{% extends 'base.html.twig' %}
+
+{% block title %}Téléverser un fichier{% endblock %}
+
+{% block body %}
+    <h1>Téléverser un fichier</h1>
+
+    {{ form_start(form) }}
+        {{ form_row(form.file) }}
+        <button type="submit" class="btn btn-primary">Téléverser</button>
+    {{ form_end(form) }}
+{% endblock %}
