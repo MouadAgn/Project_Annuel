@@ -1,0 +1,16 @@
+.listUser {
+    max-width: 70%;
+}
+
+.listUser .listUserTable {
+    width: 100%;
+    padding: 0,5em;
+    text-align: center;
+}
+
+.listUser .listUserTable, th, td {
+    border-bottom: 2px rgb(155, 155, 155) solid;
+    border-collapse: collapse;
+    padding: 1em;
+}
+

@@ -11,7 +11,7 @@ class User
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
-    private ?int $id = null;
+    private ?int $Id = null;
 
     #[ORM\Column(length: 50)]
     private ?string $Name = null;
@@ -22,13 +22,14 @@ class User
     #[ORM\Column(length: 255)]
     private ?string $Password = null;
 
-    #[ORM\Column(length: 100)]
+    #[ORM\Column(length: 100, unique: true)]
     private ?string $Mail = null;
 
-    #[ORM\Column]
-    private ?int $Role = null;
+    #[ORM\Column(type: "integer")]
+    private int $Role = self::ROLE_USER;
 
     public const ROLE_USER = 0;
+    public const ROLE_ADMIN = 1;
 
     #[ORM\Column]
     private ?\DateTimeImmutable $CreatedDate = null;
@@ -47,7 +48,7 @@ class User
 
     public function getId(): ?int
     {
-        return $this->id;
+        return $this->Id;
     }
 
     public function getName(): ?string
@@ -106,7 +107,6 @@ class User
     public function setRole(int $Role): static
     {
         $this->Role = $Role;
-
         return $this;
     }
 
@@ -168,5 +168,18 @@ class User
         $this->Country = $Country;
 
         return $this;
+    }
+
+ /*    public function addUser(User $user): static
+    {
+        if(!$this->users->contains($user)) {
+            $this->users[] = $user;
+            $user->addUser($this);
+        }
+    } */
+
+    public function isAdmin(): bool
+    {
+        return $this->Role === self::ROLE_ADMIN;
     }
 }

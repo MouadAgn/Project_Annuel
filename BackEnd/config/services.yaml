@@ -6,6 +6,9 @@
 parameters:
 
 services:
+    # App\EventListener\ExceptionListener:
+    #         tags:
+    #             - { name: kernel.event_listener, event: kernel.exception }
 
 # Déclaration du service EntityManagerInterface
     Doctrine\ORM\EntityManagerInterface:
