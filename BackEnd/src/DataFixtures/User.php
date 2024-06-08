@@ -49,7 +49,7 @@ class User extends Fixture
             // Ajoute 10 Fake File
             $file = new FileEntity();
             $file->setNameFile($faker->name);
-            $file->setWeight($faker->randomFloat(2, 0, 100));
+            $file->setWeight($faker->numberBetween(1, 1000));
             $file->setUploadDate($faker->dateTimeThisYear());
             $file->setFormat($faker->randomElement(['jpg', 'png', 'pdf']));
             $file->setPath($faker->url);
