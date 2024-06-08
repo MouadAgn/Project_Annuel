@@ -32,11 +32,20 @@ class UserController extends AbstractController
     public function getAllUsers(): Response
     {
         $criteria = new Criteria();
-        $criteria->where(Criteria::expr()->eq('Role', User::ROLE_USER));
+        $criteria->where(Criteria::expr()->eq('role', User::ROLE_USER));
 
         $users = $this->em->getRepository(User::class)->matching($criteria);
 
-        return $this->json($users);
+        $filterUsers = $users->map(function ($user) {
+            return [
+                'id' => $user->getId(),
+                'name' => $user->getName(),
+                'firstName' => $user->getFirstName(),
+                'storageCapacity' => $user->getStorageCapacity()
+            ];
+        });
+
+        return $this->json($filterUsers);
     }
 
     /**
@@ -47,7 +56,7 @@ class UserController extends AbstractController
     {
         $user = $this->em->getRepository(User::class)->find($id);
 
-        return $this->json($user);
+        return $this->json($user, context: ['groups' => 'user']);
     }
 
     /**
