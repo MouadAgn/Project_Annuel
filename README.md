@@ -1,10 +1,15 @@
 ### BACKEND
-Installer les dépendances : 
+Installer les dépendances :
+
 cd .\BackEnd
+
 composer i
 
+
 Ajouter des fakes données : 
+
 cd .\BackEnd
+
 php bin/console doctrine:fixtures:load
 
 
