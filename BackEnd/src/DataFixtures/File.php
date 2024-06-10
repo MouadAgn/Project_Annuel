@@ -16,7 +16,7 @@ use Doctrine\Persistence\ObjectManager;
 use Doctrine\ORM\EntityManagerInterface;
 
 
-use App\Entity\Files as FilesEntity;
+use App\Entity\File as FilesEntity;
 use App\Entity\User;
 
 use Faker\Factory;
