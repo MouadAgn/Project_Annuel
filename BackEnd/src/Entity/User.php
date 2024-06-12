@@ -11,10 +11,11 @@ use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
 
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[UniqueEntity(fields: ['mail'], message: 'There is already an account with this email')]
-class User implements PasswordAuthenticatedUserInterface
+class User implements PasswordAuthenticatedUserInterface, UserInterface 
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -220,11 +221,6 @@ class User implements PasswordAuthenticatedUserInterface
         return $this;
     }
 
-    /* public function subtractFileSizeInKo(int $fileSizeInKo): void
-    {
-        $this->storageCapacity -= $fileSizeInKo;
-    } */
-
     /**
      * @return Collection<int, Invoice>
      */
@@ -283,5 +279,33 @@ class User implements PasswordAuthenticatedUserInterface
         }
 
         return $this;
+    }
+
+    /* 
+    * Method for the UserInterface
+    */
+
+    public function getRoles(): array
+    {
+        return ['ROLE_USER'];
+    }
+
+    public function getSalt(): ?string
+    {
+        return null;
+    }
+
+    public function getUsername(): ?string
+    {
+        return $this->mail;
+    }
+
+    public function eraseCredentials()
+    {
+    }
+
+    public function getUserIdentifier(): string
+    {
+        return $this->mail ?? '';
     }
 }

@@ -2,14 +2,10 @@ controllers:
   resource: '../src/Controller/'
   type: 'annotation'
 
-registration:
-    path: /registration
-    controller: 'App\Controller\RegistrationController::register'
-    methods: ['GET', 'POST']
-
 file_upload:
     path: /upload
     controller: 'App\Controller\FileUploadController::upload'
     methods: ['GET', 'POST']
 
-
+api_login_check:
+    path: /api/login_check

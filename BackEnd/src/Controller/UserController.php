@@ -9,6 +9,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use App\Entity\User;
 
 use Doctrine\ORM\EntityManagerInterface;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 
 use Doctrine\Common\Collections\Criteria;
 
@@ -19,16 +20,42 @@ use Symfony\Component\HttpFoundation\Request;
 class UserController extends AbstractController
 {
     private $em;
+    private $JWTEncoder;
 
-    public function __construct(EntityManagerInterface $em)
+    public function __construct(EntityManagerInterface $em, JWTTokenManagerInterface $JWTEncoder)
     {
         $this->em = $em;
+        $this->JWTEncoder = $JWTEncoder;
+    }
+
+    /* 
+    * Test admin connection
+    */
+    #[Route('/api/admin/login_check', name: 'admin_login', methods: ['POST'])]
+    public function login(Request $request): JsonResponse
+    {
+        $jsonData = json_decode($request->getContent(), true);
+
+        if (empty($jsonData['mail']) || empty($jsonData['password'])) {
+            return new JsonResponse(['error' => 'Missing credentials'], 400);
+        }
+
+        // Check if user exists and is an admin (replace with your logic)
+        $user = $this->em->getRepository(User::class)->findOneBy(['mail' => $jsonData['mail'], 'role' => User::ROLE_ADMIN]);
+
+        if (!$user || !password_verify($jsonData['password'], $user->getPassword())) {
+            return new JsonResponse(['error' => 'Invalid credentials'], 401);
+        }
+
+        $token = $this->JWTEncoder->create($user);
+
+        return new JsonResponse(['token' => $token], 200);
     }
 
     /**
      * Route for getting all users
      */
-    #[Route('/api/users', name: 'getUsers', methods: ['GET'])]
+    #[Route('/api/admin/users', name: 'getUsers', methods: ['GET'])]
     public function getAllUsers(): Response
     {
         $criteria = new Criteria();
@@ -41,7 +68,8 @@ class UserController extends AbstractController
                 'id' => $user->getId(),
                 'name' => $user->getName(),
                 'firstName' => $user->getFirstName(),
-                'storageCapacity' => $user->getStorageCapacity()
+                'storageCapacity' => $user->getStorageCapacity(),
+                'role' => $user->getRole()
             ];
         });
 
