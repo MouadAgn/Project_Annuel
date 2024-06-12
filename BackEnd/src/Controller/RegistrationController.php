@@ -2,64 +2,112 @@
 
 namespace App\Controller;
 
+
 use App\Entity\User;
-use App\Form\RegistrationFormType;
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Doctrine\ORM\EntityManagerInterface;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Annotation\Route;
-use Symfony\Component\Mailer\MailerInterface;
-use Symfony\Component\Mime\Email;
-use Symfony\Component\HttpFoundation\Session\SessionInterface;
-use Doctrine\ORM\EntityManagerInterface;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface; // Importez l'interface
+
+use Symfony\Component\HttpFoundation\JsonResponse;
+
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
 class RegistrationController extends AbstractController
 {
 
-    private $entityManager; // Déclarez une propriété pour stocker l'EntityManager
+    private $em;
+    private $validator;
+    private $passwordHasher;
+    private $JWTManager;
 
-    public function __construct(EntityManagerInterface $entityManager) // Injectez l'EntityManager dans le constructeur
+    public function __construct(EntityManagerInterface $em, ValidatorInterface $validator, UserPasswordHasherInterface $passwordHasher, JWTTokenManagerInterface $JWTManager)
     {
-        $this->entityManager = $entityManager;
+        $this->em = $em;
+        $this->validator = $validator;
+        $this->passwordHasher = $passwordHasher;
+        $this->JWTManager = $JWTManager;
     }
     
     /**
-     * @Route("/registration", name="registration")
+     * @Route("/registration", name="registration", methods={"POST"})
      */
-    
-    public function register(Request $request, MailerInterface $mailer, SessionInterface $session): Response
+    #[Route('/api/register', name: 'register', methods: ['POST'])]
+    public function register(Request $request): JsonResponse
     {
-        $user = new User();
-        $form = $this->createForm(RegistrationFormType::class, $user);
-        $form->handleRequest($request);
+        try {
+            // Get the data and decode it
+            $data = json_decode($request->getContent(), true);
+            // var_dump($data);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            // Enregistrer l'utilisateur en base de données
+            // Check if the data is present and if its not empty -- UTILISER LE VALIDATOR POUR CE BLOC
+            if ((!isset($data['name']) || empty($data['name'])) || 
+            (!isset($data['firstName']) || empty($data['firstName'])) || 
+            (!isset($data['password']) || empty($data['password'])) || 
+            (!isset($data['mail']) || empty($data['mail'])) || 
+            (!isset($data['address']) || empty($data['address'])) || 
+            (!isset($data['zipCode']) || empty($data['zipCode'])) || 
+            (!isset($data['city']) || empty($data['city'])) || 
+            (!isset($data['country']) || empty($data['country']))) {
+                return new JsonResponse(['status' => 'Missing data'], Response::HTTP_BAD_REQUEST);
+            } 
             
-            $user->setRole(0);
+
+            // Check if the email already exist -- Déjà géré par le UniqueEntity
+            /* $user = $this->em->getRepository(User::class)->findOneBy(['mail' => $data['mail']]);
+            if ($user) {
+                return new JsonResponse(['status' => 'Email already exist!'], Response::HTTP_BAD_REQUEST);
+            } */
+
+            // Check if the data is valid according to their type
+            $errors = [];
+            if (!is_string($data['name'] ?? null)) $errors['name'] = 'Must be a string';
+            if (!is_string($data['firstName'] ?? null)) $errors['firstName'] = 'Must be a string';
+            if (!is_string($data['password'] ?? null)) $errors['password'] = 'Must be a string';
+            if (!is_string($data['mail'] ?? null)) $errors['mail'] = 'Must be a string';
+            if (!is_string($data['address'] ?? null)) $errors['address'] = 'Must be a string';
+            if (!is_int($data['zipCode'] ?? null)) $errors['zipCode'] = 'Must be an integer';
+            if (!is_string($data['city'] ?? null)) $errors['city'] = 'Must be a string';
+            if (!is_string($data['country'] ?? null)) $errors['country'] = 'Must be a string';
+
+            // If one of the data is not valid, return an error
+            if (!empty($errors)) {
+                return new JsonResponse(['errors' => $errors], Response::HTTP_BAD_REQUEST);
+            }
+
+            // Create a new user with all the fields
+            $user = new User();
+            $user->setName($data['name']);
+            $user->setFirstName($data['firstName']);
+            $user->setMail($data['mail']);
             $user->setCreatedDate(new \DateTimeImmutable());
-            $this->entityManager->persist($user);
-            $this->entityManager->flush();
+            $user->setAddress($data['address']);
+            $user->setZipCode($data['zipCode']);
+            $user->setCity($data['city']);
+            $user->setCountry($data['country']);
+            
+            // Hash the password
+            $pwd = $this->passwordHasher->hashPassword($user, $data['password']);
+            $user->setPassword($pwd);
 
-            // Envoyer l'e-mail de confirmation
-            $email = (new Email())
-                ->from('votre@email.com')
-                ->to($user->getMail())
-                ->subject('Confirmation d\'inscription')
-                ->text('Votre inscription a été confirmée.');
+            // Check with Validator
+            $errorsValidator = $this->validator->validate($user);
+            if (count($errorsValidator) > 0) {
+                $errorsString = (string) $errorsValidator;
+                // var_dump($errorsString);
+                return new JsonResponse(['errors' => $errorsString], Response::HTTP_BAD_REQUEST);
+            }
 
-            $mailer->send($email);
+            $this->em->persist($user);
+            $this->em->flush();
 
-            // Ajouter un message flash de succès
-            $this->addFlash('success', 'Inscription réussie !');
-
-            // Rediriger l'utilisateur vers une autre page, par exemple, la page d'accueil
-            // return $this->redirectToRoute('home');
+            return new JsonResponse(['status' => 'User created!'], Response::HTTP_CREATED);
+        } catch (\Exception $e) {
+            return new JsonResponse(['status' => 'User not created!', 'message' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
-
-        return $this->render('registration/index.html.twig', [
-            'registrationForm' => $form->createView(),
-        ]);
     }
 }

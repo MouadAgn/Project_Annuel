@@ -9,6 +9,7 @@ use Symfony\Component\Routing\Attribute\Route;
 use App\Entity\User;
 
 use Doctrine\ORM\EntityManagerInterface;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 
 use Doctrine\Common\Collections\Criteria;
 
@@ -19,16 +20,42 @@ use Symfony\Component\HttpFoundation\Request;
 class UserController extends AbstractController
 {
     private $em;
+    private $JWTEncoder;
 
-    public function __construct(EntityManagerInterface $em)
+    public function __construct(EntityManagerInterface $em, JWTTokenManagerInterface $JWTEncoder)
     {
         $this->em = $em;
+        $this->JWTEncoder = $JWTEncoder;
+    }
+
+    /* 
+    * Test admin connection
+    */
+    #[Route('/api/admin/login_check', name: 'admin_login', methods: ['POST'])]
+    public function login(Request $request): JsonResponse
+    {
+        $jsonData = json_decode($request->getContent(), true);
+
+        if (empty($jsonData['mail']) || empty($jsonData['password'])) {
+            return new JsonResponse(['error' => 'Missing credentials'], 400);
+        }
+
+        // Check if user exists and is an admin (replace with your logic)
+        $user = $this->em->getRepository(User::class)->findOneBy(['mail' => $jsonData['mail'], 'role' => User::ROLE_ADMIN]);
+
+        if (!$user || !password_verify($jsonData['password'], $user->getPassword())) {
+            return new JsonResponse(['error' => 'Invalid credentials'], 401);
+        }
+
+        $token = $this->JWTEncoder->create($user);
+
+        return new JsonResponse(['token' => $token], 200);
     }
 
     /**
      * Route for getting all users
      */
-    #[Route('/api/users', name: 'getUsers', methods: ['GET'])]
+    #[Route('/api/admin/users', name: 'getUsers', methods: ['GET'])]
     public function getAllUsers(): Response
     {
         $criteria = new Criteria();
@@ -41,7 +68,8 @@ class UserController extends AbstractController
                 'id' => $user->getId(),
                 'name' => $user->getName(),
                 'firstName' => $user->getFirstName(),
-                'storageCapacity' => $user->getStorageCapacity()
+                'storageCapacity' => $user->getStorageCapacity(),
+                'role' => $user->getRole()
             ];
         });
 
@@ -62,50 +90,50 @@ class UserController extends AbstractController
     /**
      * Route for creating a user, methods: ['POST']
      */
-    #[Route('/api/users/create', name: 'createUser')]
+    #[Route('/api/users/create', name: 'createUser', methods: ['POST'])]
     public function createUser(Request $request): JsonResponse
     {
-        if($request -> getMethod() !== 'POST'){
+        /* if($request -> getMethod() !== 'POST'){
             return new JsonResponse(['status' => 'Method not allowed!'], Response::HTTP_METHOD_NOT_ALLOWED);
-        }
+        } */
 
         try {
-            // Récupération des données et les décode
+            // Get the data and decode it
             $data = json_decode($request->getContent(), true);
             // var_dump($data);
 
-            // Vérifie si les données sont présentes
-            if (!isset($data['Name'], $data['FirstName'], $data['Password'], $data['Mail'], $data['Address'], $data['ZipCode'], $data['City'], $data['Country'])) {
+            // Check if the data is present
+            if (!isset($data['name'], $data['firstName'], $data['password'], $data['mail'], $data['address'], $data['zipCode'], $data['city'], $data['country'])) {
                 return new JsonResponse(['status' => 'Missing data!'], Response::HTTP_BAD_REQUEST);
             }
 
-            // Vérifie si les données sont valides par rapport à leur type
+            // Check if the data is valid according to their type
             $errors = [];
-            if (!is_string($data['Name'] ?? null)) $errors['Name'] = 'Must be a string';
-            if (!is_string($data['FirstName'] ?? null)) $errors['FirstName'] = 'Must be a string';
-            if (!is_string($data['Password'] ?? null)) $errors['Password'] = 'Must be a string';
-            if (!is_string($data['Mail'] ?? null)) $errors['Mail'] = 'Must be a string';
-            if (!is_string($data['Address'] ?? null)) $errors['Address'] = 'Must be a string';
-            if (!is_int($data['ZipCode'] ?? null)) $errors['ZipCode'] = 'Must be an integer';
-            if (!is_string($data['City'] ?? null)) $errors['City'] = 'Must be a string';
-            if (!is_string($data['Country'] ?? null)) $errors['Country'] = 'Must be a string';
+            if (!is_string($data['name'] ?? null)) $errors['name'] = 'Must be a string';
+            if (!is_string($data['firstName'] ?? null)) $errors['firstName'] = 'Must be a string';
+            if (!is_string($data['password'] ?? null)) $errors['password'] = 'Must be a string';
+            if (!is_string($data['mail'] ?? null)) $errors['mail'] = 'Must be a string';
+            if (!is_string($data['address'] ?? null)) $errors['address'] = 'Must be a string';
+            if (!is_int($data['zipCode'] ?? null)) $errors['zipCode'] = 'Must be an integer';
+            if (!is_string($data['city'] ?? null)) $errors['city'] = 'Must be a string';
+            if (!is_string($data['country'] ?? null)) $errors['country'] = 'Must be a string';
 
-            // Si les données ne sont pas valides, on retourne une erreur
+            // If one of the data is not valid, return an error
             if (!empty($errors)) {
                 return new JsonResponse(['errors' => $errors], Response::HTTP_BAD_REQUEST);
             }
 
-            // Création d'un nouvel utilisateur
+            // Create a new user with all the fields
             $user = new User();
-            $user->setName($data['Name']);
-            $user->setFirstName($data['FirstName']);
-            $user->setPassword($data['Password']);
-            $user->setMail($data['Mail']);
+            $user->setName($data['name']);
+            $user->setFirstName($data['firstName']);
+            $user->setPassword($data['password']);
+            $user->setMail($data['mail']);
             $user->setCreatedDate(new \DateTimeImmutable());
-            $user->setAddress($data['Address']);
-            $user->setZipCode($data['ZipCode']);
-            $user->setCity($data['City']);
-            $user->setCountry($data['Country']);
+            $user->setAddress($data['address']);
+            $user->setZipCode($data['zipCode']);
+            $user->setCity($data['city']);
+            $user->setCountry($data['country']);
 
             $em = $this->em;
             $em->persist($user);
@@ -118,36 +146,39 @@ class UserController extends AbstractController
     }
 
     /**
-     * @Route("/api/users/{id}", name: 'updateUser', methods={"PATCH"})
+     * Route for updating a user, methods: ['PATCH']
      */
     #[Route('/api/users/{id}', name: 'updateUser', methods: ['PATCH'])]
     public function updateUser(int $id, Request $request): JsonResponse
     {
-        if ($request->getMethod() !== 'PATCH') {
+        /* if ($request->getMethod() !== 'PATCH') {
             return new JsonResponse(['status' => 'Method not allowed!'], Response::HTTP_METHOD_NOT_ALLOWED);
-        }
+        } */
 
+        // Get the data and decode it and create an array of allowed fields
         $data = json_decode($request->getContent(), true);
-        $allowedFields = ['Name', 'FirstName', 'Password', 'Mail', 'Address', 'ZipCode', 'City', 'Country'];
+        $allowedFields = ['name', 'firstName', 'password', 'mail', 'address', 'zipCode', 'city', 'country'];
         $errors = [];
 
+        // Check if the data is valid according to the allowed fields
         foreach ($data as $field => $value) {
             if (!in_array($field, $allowedFields)) {
                 $errors[$field] = 'Not a valid field';
                 continue;
             }
 
+            // 
             switch ($field) {
-                case 'Name':
-                case 'FirstName':
-                case 'Password':
-                case 'Mail':
-                case 'Address':
-                case 'City':
-                case 'Country':
+                case 'name':
+                case 'firstName':
+                case 'password':
+                case 'mail':
+                case 'address':
+                case 'city':
+                case 'country':
                     if (!is_string($value)) $errors[$field] = 'Must be a string';
                     break;
-                case 'ZipCode':
+                case 'zipCode':
                     if (!is_int($value)) $errors[$field] = 'Must be an integer';
                     break;
             }
@@ -161,14 +192,14 @@ class UserController extends AbstractController
 
         foreach ($data as $field => $value) {
             switch ($field) {
-                case 'Name': $user->setName($value); break;
-                case 'FirstName': $user->setFirstName($value); break;
-                case 'Password': $user->setPassword($value); break;
-                case 'Mail': $user->setMail($value); break;
-                case 'Address': $user->setAddress($value); break;
-                case 'ZipCode': $user->setZipCode($value); break;
-                case 'City': $user->setCity($value); break;
-                case 'Country': $user->setCountry($value); break;
+                case 'name': $user->setName($value); break;
+                case 'firstName': $user->setFirstName($value); break;
+                case 'password': $user->setPassword($value); break;
+                case 'mail': $user->setMail($value); break;
+                case 'address': $user->setAddress($value); break;
+                case 'zipCode': $user->setZipCode($value); break;
+                case 'city': $user->setCity($value); break;
+                case 'country': $user->setCountry($value); break;
             }
         }
 
