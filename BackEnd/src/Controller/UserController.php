@@ -2,20 +2,20 @@
 
 namespace App\Controller;
 
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use App\Entity\User;
+use Doctrine\ORM\EntityManagerInterface;
+use Doctrine\Common\Collections\Criteria;
+
+use Symfony\Component\HttpFoundation\Request;
+
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
 
-use App\Entity\User;
-
-use Doctrine\ORM\EntityManagerInterface;
-use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
-
-use Doctrine\Common\Collections\Criteria;
-
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Request;
 
+use Symfony\Component\Security\Http\Attribute\IsGranted;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 
 class UserController extends AbstractController
 {
@@ -29,33 +29,35 @@ class UserController extends AbstractController
     }
 
     /* 
-    * Test admin connection
+    * Route for login
     */
-    #[Route('/api/admin/login_check', name: 'admin_login', methods: ['POST'])]
-    public function login(Request $request): JsonResponse
-    {
-        $jsonData = json_decode($request->getContent(), true);
+    // #[Route('/api/login_check', name: 'login', methods: ['POST'])]
+    // public function login(Request $request): JsonResponse
+    // {
+    //     $jsonData = json_decode($request->getContent(), true);
 
-        if (empty($jsonData['mail']) || empty($jsonData['password'])) {
-            return new JsonResponse(['error' => 'Missing credentials'], 400);
-        }
+    //     if (empty($jsonData['mail']) || empty($jsonData['password'])) {
+    //         return new JsonResponse(['error' => 'Missing credentials'], 400);
+    //     }
 
-        // Check if user exists and is an admin (replace with your logic)
-        $user = $this->em->getRepository(User::class)->findOneBy(['mail' => $jsonData['mail'], 'role' => User::ROLE_ADMIN]);
+    //     // Check if user exists
+    //     $user = $this->em->getRepository(User::class)->findOneBy(['mail' => $jsonData['mail']]);
+        
+    //     if (!$user || !password_verify($jsonData['password'], $user->getPassword())) {
+    //         return new JsonResponse(['error' => 'Invalid credentials'], 401);
+    //     }
 
-        if (!$user || !password_verify($jsonData['password'], $user->getPassword())) {
-            return new JsonResponse(['error' => 'Invalid credentials'], 401);
-        }
+    //     $token = $this->JWTEncoder->create($user);
 
-        $token = $this->JWTEncoder->create($user);
-
-        return new JsonResponse(['token' => $token], 200);
-    }
+    //     return new JsonResponse(['token' => $token], 200);
+    // }
 
     /**
-     * Route for getting all users
+     * Route for getting all users ---- A DEPLACER DANS ADMINCONTROLLER
      */
+    
     #[Route('/api/admin/users', name: 'getUsers', methods: ['GET'])]
+    // #[IsGranted('ROLE_ADMIN', message: 'Vous n\'avez pas les droits suffisants pour créer un livre')]
     public function getAllUsers(): Response
     {
         $criteria = new Criteria();
@@ -77,13 +79,31 @@ class UserController extends AbstractController
     }
 
     /**
-     * Route for getting a user by id
+     * Route for getting a user by id ------- UTILISER PAR L'ADMIN
      */
     #[Route('/api/users/{id}', name: 'getUser', methods: ['GET'])]
     public function getUserById(int $id): Response
     {
         $user = $this->em->getRepository(User::class)->find($id);
 
+        return $this->json($user, context: ['groups' => 'user']);
+    }
+
+    /**
+     * Route for getting the current user's information
+     */
+    #[Route('/api/user/profile', name: 'getUserProfile', methods: ['GET'])]
+    public function getUserProfile(): Response
+    {
+        // Récupérer l'utilisateur connecté à partir du token JWT
+        $user = $this->getUser();
+    
+        if (!$user) {
+            // Gérer le cas où l'utilisateur n'est pas trouvé ou non connecté
+            return $this->json(['message' => 'User not found or not authenticated'], status: Response::HTTP_FORBIDDEN);
+        }
+    
+        // Retourner les informations de l'utilisateur connecté
         return $this->json($user, context: ['groups' => 'user']);
     }
 
