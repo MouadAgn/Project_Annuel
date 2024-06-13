@@ -72,7 +72,7 @@ class User implements PasswordAuthenticatedUserInterface, UserInterface
     private Collection $invoices;
 
     #[Groups(['user'])]
-    #[ORM\OneToMany(targetEntity: File::class, mappedBy: 'user', orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: File::class, mappedBy: 'user', cascade: ["remove"], orphanRemoval: true)]
     private Collection $files;
 
     public function __construct()

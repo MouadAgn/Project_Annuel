@@ -13,7 +13,7 @@ use Symfony\Component\Routing\Attribute\Route;
 
 use Symfony\Component\HttpFoundation\JsonResponse;
 
-use Symfony\Component\Security\Http\Attribute\IsGranted;
+// use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 
@@ -28,82 +28,21 @@ class UserController extends AbstractController
         $this->JWTEncoder = $JWTEncoder;
     }
 
-    /* 
-    * Route for login
-    */
-    // #[Route('/api/login_check', name: 'login', methods: ['POST'])]
-    // public function login(Request $request): JsonResponse
-    // {
-    //     $jsonData = json_decode($request->getContent(), true);
-
-    //     if (empty($jsonData['mail']) || empty($jsonData['password'])) {
-    //         return new JsonResponse(['error' => 'Missing credentials'], 400);
-    //     }
-
-    //     // Check if user exists
-    //     $user = $this->em->getRepository(User::class)->findOneBy(['mail' => $jsonData['mail']]);
-        
-    //     if (!$user || !password_verify($jsonData['password'], $user->getPassword())) {
-    //         return new JsonResponse(['error' => 'Invalid credentials'], 401);
-    //     }
-
-    //     $token = $this->JWTEncoder->create($user);
-
-    //     return new JsonResponse(['token' => $token], 200);
-    // }
-
-    /**
-     * Route for getting all users ---- A DEPLACER DANS ADMINCONTROLLER
-     */
-    
-    #[Route('/api/admin/users', name: 'getUsers', methods: ['GET'])]
-    // #[IsGranted('ROLE_ADMIN', message: 'Vous n\'avez pas les droits suffisants pour créer un livre')]
-    public function getAllUsers(): Response
-    {
-        $criteria = new Criteria();
-        $criteria->where(Criteria::expr()->eq('role', User::ROLE_USER));
-
-        $users = $this->em->getRepository(User::class)->matching($criteria);
-
-        $filterUsers = $users->map(function ($user) {
-            return [
-                'id' => $user->getId(),
-                'name' => $user->getName(),
-                'firstName' => $user->getFirstName(),
-                'storageCapacity' => $user->getStorageCapacity(),
-                'role' => $user->getRole()
-            ];
-        });
-
-        return $this->json($filterUsers);
-    }
-
-    /**
-     * Route for getting a user by id ------- UTILISER PAR L'ADMIN
-     */
-    #[Route('/api/users/{id}', name: 'getUser', methods: ['GET'])]
-    public function getUserById(int $id): Response
-    {
-        $user = $this->em->getRepository(User::class)->find($id);
-
-        return $this->json($user, context: ['groups' => 'user']);
-    }
-
     /**
      * Route for getting the current user's information
      */
     #[Route('/api/user/profile', name: 'getUserProfile', methods: ['GET'])]
     public function getUserProfile(): Response
     {
-        // Récupérer l'utilisateur connecté à partir du token JWT
+        // Get the current user from the token
         $user = $this->getUser();
     
         if (!$user) {
-            // Gérer le cas où l'utilisateur n'est pas trouvé ou non connecté
+            // Return an error if the user is not found or not authenticated
             return $this->json(['message' => 'User not found or not authenticated'], status: Response::HTTP_FORBIDDEN);
         }
     
-        // Retourner les informations de l'utilisateur connecté
+        //  Return the user's information
         return $this->json($user, context: ['groups' => 'user']);
     }
 
@@ -113,10 +52,6 @@ class UserController extends AbstractController
     #[Route('/api/users/create', name: 'createUser', methods: ['POST'])]
     public function createUser(Request $request): JsonResponse
     {
-        /* if($request -> getMethod() !== 'POST'){
-            return new JsonResponse(['status' => 'Method not allowed!'], Response::HTTP_METHOD_NOT_ALLOWED);
-        } */
-
         try {
             // Get the data and decode it
             $data = json_decode($request->getContent(), true);
@@ -171,10 +106,6 @@ class UserController extends AbstractController
     #[Route('/api/users/{id}', name: 'updateUser', methods: ['PATCH'])]
     public function updateUser(int $id, Request $request): JsonResponse
     {
-        /* if ($request->getMethod() !== 'PATCH') {
-            return new JsonResponse(['status' => 'Method not allowed!'], Response::HTTP_METHOD_NOT_ALLOWED);
-        } */
-
         // Get the data and decode it and create an array of allowed fields
         $data = json_decode($request->getContent(), true);
         $allowedFields = ['name', 'firstName', 'password', 'mail', 'address', 'zipCode', 'city', 'country'];
@@ -187,7 +118,7 @@ class UserController extends AbstractController
                 continue;
             }
 
-            // 
+            // Check if the data is valid according to their type
             switch ($field) {
                 case 'name':
                 case 'firstName':
@@ -235,14 +166,17 @@ class UserController extends AbstractController
     #[Route('/api/users/{id}', name: 'deleteUser', methods: ['DELETE'])]
     public function deleteUser(int $id): JsonResponse
     {
-        /* if($request -> getMethod() !== 'DELETE'){
-            return new JsonResponse(['status' => 'Method not allowed!'], Response::HTTP_METHOD_NOT_ALLOWED);
-        } */
-
         $user = $this->em->getRepository(User::class)->find($id);
 
         if (!$user) {
             return new JsonResponse(['status' => 'User not found'], Response::HTTP_NOT_FOUND);
+        }
+
+        // Set to null the user in the invoices
+        $invoices = $user->getInvoices();
+        foreach ($invoices as $invoice) {
+            $invoice->setUser(null);
+            $this->em->persist($invoice);
         }
 
         $this->em->remove($user);
