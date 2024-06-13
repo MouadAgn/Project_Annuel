@@ -4,18 +4,20 @@ namespace App\Controller;
 
 
 use App\Entity\User;
+use Symfony\Component\Mime\Email;
 use Doctrine\ORM\EntityManagerInterface;
-use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\HttpFoundation\Response;
+
 use Symfony\Component\Routing\Annotation\Route;
 
 use Symfony\Component\HttpFoundation\JsonResponse;
-
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
-
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 
 class RegistrationController extends AbstractController
 {
@@ -24,13 +26,15 @@ class RegistrationController extends AbstractController
     private $validator;
     private $passwordHasher;
     private $JWTManager;
+    private $mailer;
 
-    public function __construct(EntityManagerInterface $em, ValidatorInterface $validator, UserPasswordHasherInterface $passwordHasher, JWTTokenManagerInterface $JWTManager)
+    public function __construct(EntityManagerInterface $em, ValidatorInterface $validator, UserPasswordHasherInterface $passwordHasher, JWTTokenManagerInterface $JWTManager, MailerInterface $mailer)
     {
         $this->em = $em;
         $this->validator = $validator;
         $this->passwordHasher = $passwordHasher;
         $this->JWTManager = $JWTManager;
+        $this->mailer = $mailer;
     }
     
     /**
@@ -104,6 +108,14 @@ class RegistrationController extends AbstractController
 
             $this->em->persist($user);
             $this->em->flush();
+
+            // Send a confirmation email
+            $email = (new Email())
+                ->from($_ENV['MAILER_FROM_ADDRESS'])
+                ->to('granil@hotmail.fr')
+                ->subject('Welcome to the Test App!')
+                ->text('Your account has been created!');
+            $this->mailer->send($email);
 
             return new JsonResponse(['status' => 'User created!'], Response::HTTP_CREATED);
         } catch (\Exception $e) {
