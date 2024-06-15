@@ -10,6 +10,12 @@ services:
     #         tags:
     #             - { name: kernel.event_listener, event: kernel.exception }
 
+    App\DataFixutres\User:
+        tags: ['doctrine.fixture.orm']
+        # arguments: 
+            # $passwordHasher: '@Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface'
+
+
 # Déclaration du service EntityManagerInterface
     Doctrine\ORM\EntityManagerInterface:
         alias: doctrine.orm.entity_manager

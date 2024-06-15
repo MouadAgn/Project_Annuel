@@ -4,11 +4,13 @@ namespace App\Controller;
 
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
-use Doctrine\Common\Collections\Criteria;
+// use Doctrine\Common\Collections\Criteria;
+
+use Symfony\Component\Mime\Email;
 
 use Symfony\Component\HttpFoundation\Request;
 
-use Symfony\Component\HttpFoundation\Response;
+// use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
 
 use Symfony\Component\HttpFoundation\JsonResponse;
@@ -16,30 +18,33 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 // use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
+use Symfony\Component\Mailer\MailerInterface;
 
 class UserController extends AbstractController
 {
     private $em;
+    private $mailer;
     private $JWTEncoder;
 
-    public function __construct(EntityManagerInterface $em, JWTTokenManagerInterface $JWTEncoder)
+    public function __construct(EntityManagerInterface $em, JWTTokenManagerInterface $JWTEncoder, MailerInterface $mailer)
     {
         $this->em = $em;
         $this->JWTEncoder = $JWTEncoder;
+        $this->mailer = $mailer;
     }
 
     /**
      * Route for getting the current user's information
      */
     #[Route('/api/user/profile', name: 'getUserProfile', methods: ['GET'])]
-    public function getUserProfile(): Response
+    public function getUserProfile(): JsonResponse
     {
         // Get the current user from the token
         $user = $this->getUser();
     
         if (!$user) {
             // Return an error if the user is not found or not authenticated
-            return $this->json(['message' => 'User not found or not authenticated'], status: Response::HTTP_FORBIDDEN);
+            return $this->json(['status' => 'KO', 'message' => 'User not found or not authenticated'], status: JsonResponse::HTTP_FORBIDDEN);
         }
     
         //  Return the user's information
@@ -55,11 +60,10 @@ class UserController extends AbstractController
         try {
             // Get the data and decode it
             $data = json_decode($request->getContent(), true);
-            // var_dump($data);
 
             // Check if the data is present
             if (!isset($data['name'], $data['firstName'], $data['password'], $data['mail'], $data['address'], $data['zipCode'], $data['city'], $data['country'])) {
-                return new JsonResponse(['status' => 'Missing data!'], Response::HTTP_BAD_REQUEST);
+                return new JsonResponse(['status' => 'KO', 'message' => 'Missing data!'], JsonResponse::HTTP_BAD_REQUEST);
             }
 
             // Check if the data is valid according to their type
@@ -75,7 +79,7 @@ class UserController extends AbstractController
 
             // If one of the data is not valid, return an error
             if (!empty($errors)) {
-                return new JsonResponse(['errors' => $errors], Response::HTTP_BAD_REQUEST);
+                return new JsonResponse(['status' => 'KO', 'errors' => $errors], JsonResponse::HTTP_BAD_REQUEST);
             }
 
             // Create a new user with all the fields
@@ -94,9 +98,9 @@ class UserController extends AbstractController
             $em->persist($user);
             $em->flush();
 
-            return new JsonResponse(['status' => 'User created!'], Response::HTTP_CREATED);
+            return new JsonResponse(['status' => 'OK', 'message' => 'User created!'], JsonResponse::HTTP_CREATED);
         } catch (\Exception $e) {
-            return new JsonResponse(['status' => 'User not created!', 'message' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
+            return new JsonResponse(['status' => 'KO', 'message' => 'User not created!', 'message2' => $e->getMessage()], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
 
@@ -136,7 +140,7 @@ class UserController extends AbstractController
         }
 
         if (!empty($errors)) {
-            return new JsonResponse(['errors' => $errors], Response::HTTP_BAD_REQUEST);
+            return new JsonResponse(['status' => 'KO', 'message' => $errors], JsonResponse::HTTP_BAD_REQUEST);
         }
 
         $user = $this->em->getRepository(User::class)->find($id);
@@ -156,20 +160,29 @@ class UserController extends AbstractController
 
         $this->em->flush();
 
-        return new JsonResponse(['status' => 'User updated']);
+        return new JsonResponse(['status' => 'OK', 'message' => 'User updated']);
 
     }
 
     /**
      * @Route("/api/users/{id}", name: 'deleteUser', methods={"DELETE"})
      */
-    #[Route('/api/users/{id}', name: 'deleteUser', methods: ['DELETE'])]
-    public function deleteUser(int $id): JsonResponse
+    #[Route('/api/users/delete', name: 'deleteUser', methods: ['DELETE'])]
+    public function deleteUser(): JsonResponse
     {
-        $user = $this->em->getRepository(User::class)->find($id);
+        // 0 by default
+        $userNbFiles = 0;
+        
+        /**
+         * @var User $user
+         */
+        // Get the current user from the token & his name & the number of files
+        $user = $this->getUser();
+        $userName = $user->getName();
+        $userNbFiles = $user->getFiles()->count();
 
         if (!$user) {
-            return new JsonResponse(['status' => 'User not found'], Response::HTTP_NOT_FOUND);
+            return new JsonResponse(['status' => 'KO', 'message' => 'User not found or not authenticated'], JsonResponse::HTTP_NOT_FOUND);
         }
 
         // Set to null the user in the invoices
@@ -182,6 +195,22 @@ class UserController extends AbstractController
         $this->em->remove($user);
         $this->em->flush();
 
-        return new JsonResponse(['status' => 'User deleted']);
+        // Send a confirmation email
+        $email = (new Email())
+        ->from($_ENV['MAILER_FROM_ADDRESS'])
+        ->to($user->getMail())
+        ->subject('Nous sommes tristes de vous voir partir !')
+        ->text('Votre compte à bien été supprimé !');
+        $this->mailer->send($email);
+
+        $emailAdmin = (new Email())
+        ->from($_ENV['MAILER_FROM_ADDRESS'])
+        ->to($_ENV['MAILER_ADMIN'])
+        ->subject('Suppresion de compte !')
+        ->text('Le client '.$userName.' à supprimer son compte !
+        Nombres de fichiers : '.$userNbFiles.'');
+        $this->mailer->send($emailAdmin);
+
+        return new JsonResponse(['status' => 'OK', 'message' => 'User deleted']);
     }
 }
