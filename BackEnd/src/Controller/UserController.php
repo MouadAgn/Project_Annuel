@@ -25,12 +25,10 @@ class UserController extends AbstractController
 {
     private $em;
     private $mailer;
-    private $JWTEncoder;
 
-    public function __construct(EntityManagerInterface $em, JWTTokenManagerInterface $JWTEncoder, MailerInterface $mailer)
+    public function __construct(EntityManagerInterface $em, MailerInterface $mailer)
     {
         $this->em = $em;
-        $this->JWTEncoder = $JWTEncoder;
         $this->mailer = $mailer;
     }
 

@@ -46,7 +46,6 @@ class RegistrationController extends AbstractController
         try {
             // Get the data and decode it
             $data = json_decode($request->getContent(), true);
-            // var_dump($data);
 
             // Check if the data is present and if its not empty -- UTILISER LE VALIDATOR POUR CE BLOC
             if ((!isset($data['name']) || empty($data['name'])) || 
@@ -59,13 +58,6 @@ class RegistrationController extends AbstractController
             (!isset($data['country']) || empty($data['country']))) {
                 return new JsonResponse(['status' => 'Missing data'], Response::HTTP_BAD_REQUEST);
             } 
-            
-
-            // Check if the email already exist -- Déjà géré par le UniqueEntity
-            /* $user = $this->em->getRepository(User::class)->findOneBy(['mail' => $data['mail']]);
-            if ($user) {
-                return new JsonResponse(['status' => 'Email already exist!'], Response::HTTP_BAD_REQUEST);
-            } */
 
             // Check if the data is valid according to their type
             $errors = [];
@@ -116,7 +108,10 @@ class RegistrationController extends AbstractController
             $this->em->persist($user);
             $this->em->flush();
 
-            return new JsonResponse(['status' => 'User created!'], Response::HTTP_CREATED);
+            // Generate a JWT token
+            $token = $this->JWTManager->create($user);
+
+            return new JsonResponse(['status' => 'OK', 'message' => 'User created', 'token' => $token], Response::HTTP_CREATED);
         } catch (\Exception $e) {
             return new JsonResponse(['status' => 'User not created!', 'message' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
