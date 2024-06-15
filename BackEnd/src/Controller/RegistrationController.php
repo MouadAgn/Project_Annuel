@@ -102,20 +102,19 @@ class RegistrationController extends AbstractController
             $errorsValidator = $this->validator->validate($user);
             if (count($errorsValidator) > 0) {
                 $errorsString = (string) $errorsValidator;
-                // var_dump($errorsString);
                 return new JsonResponse(['errors' => $errorsString], Response::HTTP_BAD_REQUEST);
             }
-
-            $this->em->persist($user);
-            $this->em->flush();
 
             // Send a confirmation email
             $email = (new Email())
                 ->from($_ENV['MAILER_FROM_ADDRESS'])
-                ->to('granil@hotmail.fr')
-                ->subject('Welcome to the Test App!')
-                ->text('Your account has been created!');
+                ->to($user->getMail())
+                ->subject('Bienvenue sur notre Application de stockage en ligne !')
+                ->text('Votre compte à bien été créé !');
             $this->mailer->send($email);
+
+            $this->em->persist($user);
+            $this->em->flush();
 
             return new JsonResponse(['status' => 'User created!'], Response::HTTP_CREATED);
         } catch (\Exception $e) {
