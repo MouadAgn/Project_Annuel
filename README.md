@@ -1,20 +1,26 @@
-### BACKEND
+## BACKEND
 Installer les dépendances :
 
-cd .\BackEnd
+`cd .\BackEnd`
 
-composer i
+`composer i`
 
 
 Ajouter des fakes données : 
 
-cd .\BackEnd
+`cd .\BackEnd`
 
-php bin/console doctrine:fixtures:load
+`php bin/console doctrine:fixtures:load`
 
 
+#### MAILER : 
+Pour mettre en place la simulation d'envoi de mail : 
 
-### FRONTEND
-Installer les dépendances : 
-cd .\FrontEnd
-npm i
+Ajouter vos paramètres `MAILER_DSN` transmis par MailTrap dans le fichier `.env`
+
+## FRONTEND
+Installer les dépendances :
+
+`cd .\FrontEnd`
+
+`npm i`
