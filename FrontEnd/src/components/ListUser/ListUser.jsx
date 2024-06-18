@@ -1,9 +1,11 @@
-import '../components/ListUser.css'
+import './ListUser.css';
+import TestAPI from '../Test.jsx';
 
 export default function ListUser() {
     return (
         <div className="listUser">
-            <table className='listUserTable'>
+            <TestAPI />
+            {/* <table className='listUserTable'>
                 <thead>
                     <tr>
                         <th>Utilisateur</th>
@@ -29,7 +31,7 @@ export default function ListUser() {
                         <td><button>voir plus</button></td>
                     </tr>
                 </tbody> 
-            </table>
+            </table> */}
         </div>
     )
 }

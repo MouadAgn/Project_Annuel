@@ -7,12 +7,8 @@ import React, { useState } from 'react';
 
 export default function ResearchFilter() {
     const [data, setData] = useState([]);
-    const [filter, setFilter] = useState('all');
+    // const [filter, setFilter] = useState('all');
     const [sort, setSort] = useState('asc');
-
-    /* const handleFilterChange = (e) => {
-        setFilter(e.target.value);
-    } */
 
     // Function to handle the sort change
     const handleSortChange = (e) => {

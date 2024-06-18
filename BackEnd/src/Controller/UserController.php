@@ -4,21 +4,15 @@ namespace App\Controller;
 
 use App\Entity\User;
 use Doctrine\ORM\EntityManagerInterface;
-// use Doctrine\Common\Collections\Criteria;
-
-use Symfony\Component\Mime\Email;
 
 use Symfony\Component\HttpFoundation\Request;
-
-// use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Routing\Attribute\Route;
-
 use Symfony\Component\HttpFoundation\JsonResponse;
 
-// use Symfony\Component\Security\Http\Attribute\IsGranted;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
+
 use Symfony\Component\Mailer\MailerInterface;
+use Symfony\Component\Mime\Email;
 
 #[Route('/api/user', name: 'users_')]
 class UserController extends AbstractController
@@ -51,7 +45,7 @@ class UserController extends AbstractController
     }
 
     /**
-     * Route for updating a user, methods: ['PATCH']
+     * Route for updating a user's information
      */
     #[Route('/{id}', name: 'update', methods: ['PATCH'])]
     public function updateUser(int $id, Request $request): JsonResponse
@@ -100,8 +94,6 @@ class UserController extends AbstractController
                 return new JsonResponse(['status' => 'KO', 'message' => $errors], JsonResponse::HTTP_BAD_REQUEST);
             }
     
-            // $user = $this->em->getRepository(User::class)->find($id);
-    
             if (!$user) {
                 return new JsonResponse(['status' => 'KO', 'message' => 'User not found'], JsonResponse::HTTP_NOT_FOUND);
             }
@@ -128,7 +120,7 @@ class UserController extends AbstractController
     }
 
     /**
-     * @Route("/api/users/{id}", name: 'deleteUser', methods={"DELETE"})
+     * Route for deleting a user
      */
     #[Route('/delete', name: 'delete', methods: ['DELETE'])]
     public function deleteUser(): JsonResponse
@@ -183,7 +175,7 @@ class UserController extends AbstractController
     }
 
     /**
-     * Route pour ajouter de l'espace de stockage à un utilisateur
+     * Route for adding storage to a user
      */
     #[Route('/add_storage', name: 'addStorage', methods: ['PUT'])]
     public function addStorage(): JsonResponse

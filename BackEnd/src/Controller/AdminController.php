@@ -14,22 +14,24 @@ use App\Entity\User;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\EntityManagerInterface;
 
+use Psr\Log\LoggerInterface;
 
 class AdminController extends AbstractController
 {
 
     private $em;
+    private $logger;
 
-    public function __construct(EntityManagerInterface $em)
+    public function __construct(EntityManagerInterface $em, LoggerInterface $logger)
     {
         $this->em = $em;
+        $this->logger = $logger;
     }
 
     /**
     * Route for getting all users
     */
     #[Route('/api/admin/users', name: 'getUsers', methods: ['GET'])]
-    // #[IsGranted('ROLE_ADMIN', message: 'You do not have permission to access this route.')]
     public function getAllUsers(): Response
     {
         $criteria = new Criteria();
@@ -51,18 +53,21 @@ class AdminController extends AbstractController
     }
 
     /**
-     * Route for getting a user by id ------- UTILISER PAR L'ADMIN
+     * Route for getting a user by id
      */
     #[Route('/api/admin/{id}', name: 'getUser', methods: ['GET'])]
-    public function getUserById(int $id): Response
+    public function getUserById(Request $request, int $id): Response
     {
         $user = $this->em->getRepository(User::class)->find($id);
 
+        // $this->logger->debug('Test Monolog');
+        // $this->logger->debug('Request URI: ' . $request->getUri());
+        // $this->logger->debug('Request Headers: ' . json_encode($request->headers->all()));
         return $this->json($user, context: ['groups' => 'user']);
     }
 
     /**
-     * Route for creating a user, methods: ['POST']
+     * Route for creating a user
      */
     #[Route('/api/admin/create', name: 'createUser', methods: ['POST'])]
     public function createUser(Request $request): JsonResponse
