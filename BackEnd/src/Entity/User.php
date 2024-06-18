@@ -10,9 +10,12 @@ use Doctrine\Common\Collections\ArrayCollection;
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
 
+use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
+use Symfony\Component\Security\Core\User\UserInterface;
+
 #[ORM\Entity(repositoryClass: UserRepository::class)]
 #[UniqueEntity(fields: ['mail'], message: 'There is already an account with this email')]
-class User
+class User implements PasswordAuthenticatedUserInterface, UserInterface 
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
@@ -69,7 +72,7 @@ class User
     private Collection $invoices;
 
     #[Groups(['user'])]
-    #[ORM\OneToMany(targetEntity: File::class, mappedBy: 'user', orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: File::class, mappedBy: 'user', cascade: ["remove"], orphanRemoval: true)]
     private Collection $files;
 
     public function __construct()
@@ -218,11 +221,6 @@ class User
         return $this;
     }
 
-    /* public function subtractFileSizeInKo(int $fileSizeInKo): void
-    {
-        $this->storageCapacity -= $fileSizeInKo;
-    } */
-
     /**
      * @return Collection<int, Invoice>
      */
@@ -281,5 +279,36 @@ class User
         }
 
         return $this;
+    }
+
+    /* 
+    * Method for the UserInterface
+    */
+
+    public function getRoles(): array
+    {
+        if($this->role === self::ROLE_ADMIN){
+            return ['ROLE_ADMIN'];
+        }
+        return ['ROLE_USER'];
+    }
+
+    public function getSalt(): ?string
+    {
+        return null;
+    }
+
+    public function getUsername(): ?string
+    {
+        return $this->getUserIdentifier();
+    }
+
+    public function eraseCredentials(): void
+    {
+    }
+
+    public function getUserIdentifier(): string
+    {
+        return $this->mail;
     }
 }
