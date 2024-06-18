@@ -72,7 +72,7 @@ class User implements PasswordAuthenticatedUserInterface, UserInterface
     private Collection $invoices;
 
     #[Groups(['user'])]
-    #[ORM\OneToMany(targetEntity: File::class, mappedBy: 'user', orphanRemoval: true)]
+    #[ORM\OneToMany(targetEntity: File::class, mappedBy: 'user', cascade: ["remove"], orphanRemoval: true)]
     private Collection $files;
 
     public function __construct()
@@ -287,6 +287,9 @@ class User implements PasswordAuthenticatedUserInterface, UserInterface
 
     public function getRoles(): array
     {
+        if($this->role === self::ROLE_ADMIN){
+            return ['ROLE_ADMIN'];
+        }
         return ['ROLE_USER'];
     }
 
@@ -297,15 +300,15 @@ class User implements PasswordAuthenticatedUserInterface, UserInterface
 
     public function getUsername(): ?string
     {
-        return $this->mail;
+        return $this->getUserIdentifier();
     }
 
-    public function eraseCredentials()
+    public function eraseCredentials(): void
     {
     }
 
     public function getUserIdentifier(): string
     {
-        return $this->mail ?? '';
+        return $this->mail;
     }
 }

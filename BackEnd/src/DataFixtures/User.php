@@ -5,6 +5,7 @@ namespace App\DataFixtures;
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
 
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use App\Entity\User as UserEntity;
 use App\Entity\Invoice as InvoiceEntity;
 use App\Entity\File as FileEntity;
@@ -14,9 +15,20 @@ use Faker\Factory;
 
 class User extends Fixture
 {
+    private $passwordHasher;
     public const ORDER = 1;
+
+    public function __construct(UserPasswordHasherInterface $passwordHasher)
+    {
+        $this->passwordHasher = $passwordHasher;
+    }
     
-    public function load(ObjectManager $manager): void
+    /**
+     * {@inheritdoc}
+     *
+     * @return void
+     */
+    public function load(ObjectManager $manager)
     {
         $faker = Factory::create();
 
@@ -24,10 +36,11 @@ class User extends Fixture
 
             // Ajoute 10 Fake User
             $user = new UserEntity();
+            $firstName = $faker->firstName;
             $user->setName($faker->name);
-            $user->setFirstName($faker->firstName);
+            $user->setFirstName($firstName);
             $user->setMail($faker->email);
-            $user->setPassword($faker->password);
+            $user->setPassword($this->passwordHasher->hashPassword($user, $firstName));
             $user->setAddress($faker->address);
             $user->setZipCode($faker->randomNumber(5, true));
             $user->setStorageCapacity(20000);

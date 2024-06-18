@@ -1,11 +1,7 @@
 controllers:
   resource: '../src/Controller/'
-  type: 'annotation'
+  type: 'attribute'
 
-file_upload:
-    path: /upload
-    controller: 'App\Controller\FileUploadController::upload'
-    methods: ['GET', 'POST']
 
 api_login_check:
     path: /api/login_check

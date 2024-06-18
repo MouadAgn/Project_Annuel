@@ -4,18 +4,20 @@ namespace App\Controller;
 
 
 use App\Entity\User;
+use Symfony\Component\Mime\Email;
 use Doctrine\ORM\EntityManagerInterface;
-use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 use Symfony\Component\HttpFoundation\Request;
+use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\HttpFoundation\Response;
+
 use Symfony\Component\Routing\Annotation\Route;
 
 use Symfony\Component\HttpFoundation\JsonResponse;
-
-use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
-use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
-
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+
+use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 
 class RegistrationController extends AbstractController
 {
@@ -24,13 +26,15 @@ class RegistrationController extends AbstractController
     private $validator;
     private $passwordHasher;
     private $JWTManager;
+    private $mailer;
 
-    public function __construct(EntityManagerInterface $em, ValidatorInterface $validator, UserPasswordHasherInterface $passwordHasher, JWTTokenManagerInterface $JWTManager)
+    public function __construct(EntityManagerInterface $em, ValidatorInterface $validator, UserPasswordHasherInterface $passwordHasher, JWTTokenManagerInterface $JWTManager, MailerInterface $mailer)
     {
         $this->em = $em;
         $this->validator = $validator;
         $this->passwordHasher = $passwordHasher;
         $this->JWTManager = $JWTManager;
+        $this->mailer = $mailer;
     }
     
     /**
@@ -42,7 +46,6 @@ class RegistrationController extends AbstractController
         try {
             // Get the data and decode it
             $data = json_decode($request->getContent(), true);
-            // var_dump($data);
 
             // Check if the data is present and if its not empty -- UTILISER LE VALIDATOR POUR CE BLOC
             if ((!isset($data['name']) || empty($data['name'])) || 
@@ -55,13 +58,6 @@ class RegistrationController extends AbstractController
             (!isset($data['country']) || empty($data['country']))) {
                 return new JsonResponse(['status' => 'Missing data'], Response::HTTP_BAD_REQUEST);
             } 
-            
-
-            // Check if the email already exist -- Déjà géré par le UniqueEntity
-            /* $user = $this->em->getRepository(User::class)->findOneBy(['mail' => $data['mail']]);
-            if ($user) {
-                return new JsonResponse(['status' => 'Email already exist!'], Response::HTTP_BAD_REQUEST);
-            } */
 
             // Check if the data is valid according to their type
             $errors = [];
@@ -98,14 +94,24 @@ class RegistrationController extends AbstractController
             $errorsValidator = $this->validator->validate($user);
             if (count($errorsValidator) > 0) {
                 $errorsString = (string) $errorsValidator;
-                // var_dump($errorsString);
                 return new JsonResponse(['errors' => $errorsString], Response::HTTP_BAD_REQUEST);
             }
+
+            // Send a confirmation email
+            $email = (new Email())
+                ->from($_ENV['MAILER_FROM_ADDRESS'])
+                ->to($user->getMail())
+                ->subject('Bienvenue sur notre Application de stockage en ligne !')
+                ->text('Votre compte à bien été créé !');
+            $this->mailer->send($email);
 
             $this->em->persist($user);
             $this->em->flush();
 
-            return new JsonResponse(['status' => 'User created!'], Response::HTTP_CREATED);
+            // Generate a JWT token
+            $token = $this->JWTManager->create($user);
+
+            return new JsonResponse(['status' => 'OK', 'message' => 'User created', 'token' => $token], Response::HTTP_CREATED);
         } catch (\Exception $e) {
             return new JsonResponse(['status' => 'User not created!', 'message' => $e->getMessage()], Response::HTTP_INTERNAL_SERVER_ERROR);
         }
