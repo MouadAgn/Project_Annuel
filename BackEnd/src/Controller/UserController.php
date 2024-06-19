@@ -14,7 +14,7 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 
-#[Route('/api/user', name: 'users_')]
+#[Route('/api/user', name: 'user_')]
 class UserController extends AbstractController
 {
     private $em;
@@ -47,7 +47,7 @@ class UserController extends AbstractController
     /**
      * Route for updating a user's information
      */
-    #[Route('/{id}', name: 'update', methods: ['PATCH'])]
+    #[Route('/update', name: 'update', methods: ['PATCH'])]
     public function updateUser(int $id, Request $request): JsonResponse
     {
         try {
