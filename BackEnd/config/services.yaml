@@ -10,10 +10,10 @@ services:
     #         tags:
     #             - { name: kernel.event_listener, event: kernel.exception }
 
-    App\DataFixutres\User:
+    App\DataFixtures\User:
         tags: ['doctrine.fixture.orm']
-        # arguments: 
-            # $passwordHasher: '@Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface'
+        arguments: 
+            $passwordHasher: '@Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface'
 
     App\EventListener\RequestListener:
         arguments:
