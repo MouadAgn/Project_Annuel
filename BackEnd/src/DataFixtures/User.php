@@ -4,8 +4,8 @@ namespace App\DataFixtures;
 
 use Doctrine\Bundle\FixturesBundle\Fixture;
 use Doctrine\Persistence\ObjectManager;
-
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
+
 use App\Entity\User as UserEntity;
 use App\Entity\Invoice as InvoiceEntity;
 use App\Entity\File as FileEntity;
@@ -16,7 +16,6 @@ use Faker\Factory;
 class User extends Fixture
 {
     private $passwordHasher;
-    public const ORDER = 1;
 
     public function __construct(UserPasswordHasherInterface $passwordHasher)
     {
