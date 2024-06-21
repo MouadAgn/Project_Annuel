@@ -1,10 +1,10 @@
 // import './App.css'
 
 import { Routes, Route } from 'react-router-dom'
-import Dashboard from './pages/Dashboard'
+import Dashboard from './pages/dashboard'
 import AddFile from './pages/addFile'
 import ListFile from './pages/listFile'
-import Login from './pages/Login'
+import Login from './pages/login'
 
 function App() {
   return (

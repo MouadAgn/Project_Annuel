@@ -47,6 +47,7 @@ export default function ResearchFilter() {
                         <option value="all">Tout</option>
                         <option value="name">Nom</option>
                         <option value="date">Date</option>
+                        <option value="size">Taille</option>
                     </select>
                 </div>
                 <div className="researchFilterSort" onClick={handleSortChange}>

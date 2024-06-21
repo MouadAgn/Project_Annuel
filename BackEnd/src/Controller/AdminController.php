@@ -45,6 +45,7 @@ class AdminController extends AbstractController
                 'name' => $user->getName(),
                 'firstName' => $user->getFirstName(),
                 'storageCapacity' => $user->getStorageCapacity(),
+                'createdDate' => $user->getCreatedDate()->format('Y-m-d'),
                 'role' => $user->getRole()
             ];
         });
