@@ -27,7 +27,6 @@ export default function Dashboard() {
                 const userResponse = await api.getAllUsers(api.token);
                 setUsers(userResponse);
         
-                // Assuming you have a separate API call for files
                 /* const fileResponse = await api.getFiles(); // Replace with your API call
                 setFiles(fileResponse); */
             } catch (error) {
