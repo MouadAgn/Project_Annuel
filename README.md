@@ -5,6 +5,12 @@ Installer les dépendances :
 
 `composer i`
 
+Générer une Pair de clés : 
+
+`cd .\BackEnd`
+
+`php bin/console lexik:jwt:generate-keypair`
+
 
 Ajouter des fakes données : 
 
