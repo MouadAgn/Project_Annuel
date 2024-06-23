@@ -4,9 +4,24 @@
 # Put parameters here that don't need to change on each machine where the app is deployed
 # https://symfony.com/doc/current/best_practices.html#use-parameters-for-application-configuration
 parameters:
+    uploads_directory: '%kernel.project_dir%/public/uploads'
+
 
 services:
+    # App\EventListener\ExceptionListener:
+    #         tags:
+    #             - { name: kernel.event_listener, event: kernel.exception }
 
+    App\DataFixtures\User:
+        tags: ['doctrine.fixture.orm']
+        arguments: 
+            $passwordHasher: '@Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface'
+
+    App\EventListener\RequestListener:
+        arguments:
+            $logger: '@logger'
+        tags:
+            - { name: kernel.event_listener, event: kernel.request }
 # Déclaration du service EntityManagerInterface
     Doctrine\ORM\EntityManagerInterface:
         alias: doctrine.orm.entity_manager
