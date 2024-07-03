@@ -80,9 +80,8 @@ class InvoiceController extends AbstractController
         return new JsonResponse(['message' => 'Invoice created successfully', 'invoice_id' => $invoice->getId()], 201);
     }
 
-    /**
-     * @Route("/invoice/delete/{id}", name="invoice_delete", methods={"DELETE"})
-     */
+
+    #[Route("/invoice/delete/{id}", name: 'invoice_delete', methods: ['DELETE'])]
     public function deleteInvoice($id): JsonResponse
     {
         $invoice = $this->invoiceRepository->find($id);
@@ -94,5 +93,49 @@ class InvoiceController extends AbstractController
         $this->entityManager->flush();
 
         return new JsonResponse(['message' => 'Invoice deleted successfully'], 200);
+    }
+
+    #[Route("/invoice/{id}", name: 'invoice_get', methods: ['GET'])]
+    public function getInvoice($id): JsonResponse
+    {
+        $invoice = $this->invoiceRepository->find($id);
+        if (!$invoice) {
+            return new JsonResponse(['error' => 'Invoice not found'], 404);
+        }
+
+        return new JsonResponse([
+            'id' => $invoice->getId(),
+            'purchasedDate' => $invoice->getPurchasedDate()->format('Y-m-d H:i:s'),
+            'pdf' => $invoice->getPdf(),
+            'user' => [
+                'id' => $invoice->getUser()->getId(),
+                'name' => $invoice->getUser()->getName(),
+                'username' => $invoice->getUser()->getUsername(),
+                'email' => $invoice->getUser()->getMail(),
+            ],
+        ], 200);
+    }
+    
+    #[Route("/invoices", name: 'invoice_list', methods: ['GET'])]
+    public function listInvoices(): JsonResponse
+    {
+        $invoices = $this->invoiceRepository->findAll();
+        $invoiceData = [];
+
+        foreach ($invoices as $invoice) {
+            $invoiceData[] = [
+                'id' => $invoice->getId(),
+                'purchasedDate' => $invoice->getPurchasedDate()->format('Y-m-d H:i:s'),
+                'pdf' => $invoice->getPdf(),
+                'user' => [
+                    'id' => $invoice->getUser()->getId(),
+                    'name' => $invoice->getUser()->getName(),
+                    'username' => $invoice->getUser()->getUsername(),
+                    'email' => $invoice->getUser()->getMail(),
+                ],
+            ];
+        }
+
+        return new JsonResponse($invoiceData, 200);
     }
 }
