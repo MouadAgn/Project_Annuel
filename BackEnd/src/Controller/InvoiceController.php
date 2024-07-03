@@ -6,13 +6,12 @@ use App\Entity\Invoice;
 use App\Entity\User;
 use App\Repository\InvoiceRepository;
 use Doctrine\ORM\EntityManagerInterface;
-use Dompdf\Dompdf;
-use Dompdf\Options;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use TCPDF;
 
 class InvoiceController extends AbstractController
 {
@@ -25,71 +24,56 @@ class InvoiceController extends AbstractController
         $this->invoiceRepository = $invoiceRepository;
     }
 
-    /**
-     * @Route("/invoice/create", name="invoice_create", methods={"POST"})
-     */
+    #[Route("/invoice/create", name: 'invoice_create', methods: ['POST'])]
     public function createInvoice(Request $request, ValidatorInterface $validator): JsonResponse
     {
-        // Extract data from request
         $data = json_decode($request->getContent(), true);
 
-        // Validate data
         if (empty($data['user_id'])) {
             return new JsonResponse(['error' => 'Invalid data'], 400);
         }
 
-        // Find user by ID
         $user = $this->entityManager->getRepository(User::class)->find($data['user_id']);
         if (!$user) {
             return new JsonResponse(['error' => 'User not found'], 404);
         }
 
-        // Create and set up new Invoice entity
         $invoice = new Invoice();
         $invoice->setPurchasedDate(new \DateTime());
         $invoice->setUser($user);
 
-        // Generate the HTML content for the PDF
+        // Generate the PDF
+        $pdf = new TCPDF();
+        $pdf->AddPage();
+
         $htmlContent = "
-            <html>
-            <head>
-                <meta charset='UTF-8'>
-                <title>Invoice</title>
-            </head>
-            <body>
-                <h1>Invoice #{$invoice->getId()}</h1>
-                <p>User ID: {$user->getId()}</p>
-                <p>Name: {$user->getName()}</p>
-                <p>Surname: {$user->getSurname()}</p>
-                <p>Email: {$user->getEmail()}</p>
-                <p>Price: $20</p>
-                <p>Date: " . $invoice->getPurchasedDate()->format('Y-m-d H:i:s') . "</p>
-            </body>
-            </html>
+            <h1>Invoice #{$invoice->getId()}</h1>
+            <p>User ID: {$user->getId()}</p>
+            <p>Name: {$user->getName()}</p>
+            <p>Surname: {$user->getUsername()}</p>
+            <p>Email: {$user->getMail()}</p>
+            <p>Price: $20</p>
+            <p>Date: " . $invoice->getPurchasedDate()->format('Y-m-d H:i:s') . "</p>
         ";
 
-        $pdfOptions = new Options();
-        $pdfOptions->set('defaultFont', 'Arial');
+        $pdf->writeHTML($htmlContent);
 
-        $dompdf = new Dompdf($pdfOptions);
-        $dompdf->loadHtml($htmlContent);
-        $dompdf->setPaper('A4', 'portrait');
-        $dompdf->render();
+        // Ensure the invoices directory exists
+        $invoicesDir = $this->getParameter('kernel.project_dir') . '/invoices';
+        if (!is_dir($invoicesDir)) {
+            mkdir($invoicesDir, 0775, true);
+        }
 
-        // Define the PDF file path
-        $pdfFilePath = 'invoices/invoice_' . uniqid() . '.pdf'; // generate unique filename
-        file_put_contents($pdfFilePath, $dompdf->output());
+        $pdfFilePath = $invoicesDir . '/invoice_' . uniqid() . '.pdf';
+        $pdf->Output($pdfFilePath, 'F');
 
-        // Set the PDF file path in the Invoice entity
         $invoice->setPdf($pdfFilePath);
 
-        // Validate the invoice entity
         $errors = $validator->validate($invoice);
         if (count($errors) > 0) {
             return new JsonResponse(['error' => (string) $errors], 400);
         }
 
-        // Persist and save the invoice
         $this->entityManager->persist($invoice);
         $this->entityManager->flush();
 
@@ -101,13 +85,11 @@ class InvoiceController extends AbstractController
      */
     public function deleteInvoice($id): JsonResponse
     {
-        // Find invoice by ID
         $invoice = $this->invoiceRepository->find($id);
         if (!$invoice) {
             return new JsonResponse(['error' => 'Invoice not found'], 404);
         }
 
-        // Remove the invoice
         $this->entityManager->remove($invoice);
         $this->entityManager->flush();
 
