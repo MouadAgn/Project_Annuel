@@ -3,79 +3,114 @@
 namespace App\Controller;
 
 use App\Entity\Invoice;
-use App\Form\InvoiceType;
+use App\Entity\User;
 use App\Repository\InvoiceRepository;
 use Doctrine\ORM\EntityManagerInterface;
+use Dompdf\Dompdf;
+use Dompdf\Options;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
-use Symfony\Component\HttpFoundation\Response;
-use Symfony\Component\Routing\Attribute\Route;
+use Symfony\Component\Routing\Annotation\Route;
+use Symfony\Component\Validator\Validator\ValidatorInterface;
 
-#[Route('/invoice')]
 class InvoiceController extends AbstractController
 {
-    #[Route('/', name: 'app_invoice_index', methods: ['GET'])]
-    public function index(InvoiceRepository $invoiceRepository): Response
+    private $entityManager;
+    private $invoiceRepository;
+
+    public function __construct(EntityManagerInterface $entityManager, InvoiceRepository $invoiceRepository)
     {
-        return $this->render('invoice/index.html.twig', [
-            'invoices' => $invoiceRepository->findAll(),
-        ]);
+        $this->entityManager = $entityManager;
+        $this->invoiceRepository = $invoiceRepository;
     }
 
-    #[Route('/new', name: 'app_invoice_new', methods: ['GET', 'POST'])]
-    public function new(Request $request, EntityManagerInterface $entityManager): Response
+    /**
+     * @Route("/invoice/create", name="invoice_create", methods={"POST"})
+     */
+    public function createInvoice(Request $request, ValidatorInterface $validator): JsonResponse
     {
+        // Extract data from request
+        $data = json_decode($request->getContent(), true);
+
+        // Validate data
+        if (empty($data['user_id'])) {
+            return new JsonResponse(['error' => 'Invalid data'], 400);
+        }
+
+        // Find user by ID
+        $user = $this->entityManager->getRepository(User::class)->find($data['user_id']);
+        if (!$user) {
+            return new JsonResponse(['error' => 'User not found'], 404);
+        }
+
+        // Create and set up new Invoice entity
         $invoice = new Invoice();
-        $form = $this->createForm(InvoiceType::class, $invoice);
-        $form->handleRequest($request);
+        $invoice->setPurchasedDate(new \DateTime());
+        $invoice->setUser($user);
 
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->persist($invoice);
-            $entityManager->flush();
+        // Generate the HTML content for the PDF
+        $htmlContent = "
+            <html>
+            <head>
+                <meta charset='UTF-8'>
+                <title>Invoice</title>
+            </head>
+            <body>
+                <h1>Invoice #{$invoice->getId()}</h1>
+                <p>User ID: {$user->getId()}</p>
+                <p>Name: {$user->getName()}</p>
+                <p>Surname: {$user->getSurname()}</p>
+                <p>Email: {$user->getEmail()}</p>
+                <p>Price: $20</p>
+                <p>Date: " . $invoice->getPurchasedDate()->format('Y-m-d H:i:s') . "</p>
+            </body>
+            </html>
+        ";
 
-            return $this->redirectToRoute('app_invoice_index', [], Response::HTTP_SEE_OTHER);
+        $pdfOptions = new Options();
+        $pdfOptions->set('defaultFont', 'Arial');
+
+        $dompdf = new Dompdf($pdfOptions);
+        $dompdf->loadHtml($htmlContent);
+        $dompdf->setPaper('A4', 'portrait');
+        $dompdf->render();
+
+        // Define the PDF file path
+        $pdfFilePath = 'invoices/invoice_' . uniqid() . '.pdf'; // generate unique filename
+        file_put_contents($pdfFilePath, $dompdf->output());
+
+        // Set the PDF file path in the Invoice entity
+        $invoice->setPdf($pdfFilePath);
+
+        // Validate the invoice entity
+        $errors = $validator->validate($invoice);
+        if (count($errors) > 0) {
+            return new JsonResponse(['error' => (string) $errors], 400);
         }
 
-        return $this->render('invoice/new.html.twig', [
-            'invoice' => $invoice,
-            'form' => $form,
-        ]);
+        // Persist and save the invoice
+        $this->entityManager->persist($invoice);
+        $this->entityManager->flush();
+
+        return new JsonResponse(['message' => 'Invoice created successfully', 'invoice_id' => $invoice->getId()], 201);
     }
 
-    #[Route('/{id}', name: 'app_invoice_show', methods: ['GET'])]
-    public function show(Invoice $invoice): Response
+    /**
+     * @Route("/invoice/delete/{id}", name="invoice_delete", methods={"DELETE"})
+     */
+    public function deleteInvoice($id): JsonResponse
     {
-        return $this->render('invoice/show.html.twig', [
-            'invoice' => $invoice,
-        ]);
-    }
-
-    #[Route('/{id}/edit', name: 'app_invoice_edit', methods: ['GET', 'POST'])]
-    public function edit(Request $request, Invoice $invoice, EntityManagerInterface $entityManager): Response
-    {
-        $form = $this->createForm(InvoiceType::class, $invoice);
-        $form->handleRequest($request);
-
-        if ($form->isSubmitted() && $form->isValid()) {
-            $entityManager->flush();
-
-            return $this->redirectToRoute('app_invoice_index', [], Response::HTTP_SEE_OTHER);
+        // Find invoice by ID
+        $invoice = $this->invoiceRepository->find($id);
+        if (!$invoice) {
+            return new JsonResponse(['error' => 'Invoice not found'], 404);
         }
 
-        return $this->render('invoice/edit.html.twig', [
-            'invoice' => $invoice,
-            'form' => $form,
-        ]);
-    }
+        // Remove the invoice
+        $this->entityManager->remove($invoice);
+        $this->entityManager->flush();
 
-    #[Route('/{id}', name: 'app_invoice_delete', methods: ['POST'])]
-    public function delete(Request $request, Invoice $invoice, EntityManagerInterface $entityManager): Response
-    {
-        if ($this->isCsrfTokenValid('delete'.$invoice->getId(), $request->getPayload()->get('_token'))) {
-            $entityManager->remove($invoice);
-            $entityManager->flush();
-        }
-
-        return $this->redirectToRoute('app_invoice_index', [], Response::HTTP_SEE_OTHER);
+        return new JsonResponse(['message' => 'Invoice deleted successfully'], 200);
     }
 }
