@@ -30,7 +30,7 @@ class File
     private ?string $path = null;
 
     #[ORM\ManyToOne(inversedBy: 'files')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: true)]
     private ?User $user = null;
     public function getId(): ?int
     {
