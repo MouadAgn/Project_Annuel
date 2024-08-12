@@ -6,17 +6,22 @@ use App\Repository\FileRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
+use Symfony\Component\Serializer\Annotation\Groups;
+
 #[ORM\Entity(repositoryClass: FileRepository::class)]
 class File
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['user'])]
     private ?int $id = null;
 
+    #[Groups(['user'])]
     #[ORM\Column(length: 255)]
     private ?string $nameFile = null;
 
+    #[Groups(['user'])]
     #[ORM\Column]
     private ?float $weight = null;
 

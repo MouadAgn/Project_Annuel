@@ -1,12 +1,12 @@
+import React, { createContext, useState, useContext, useEffect } from 'react';
 import { jwtDecode } from 'jwt-decode';
 
-export default function Security() {
-
-    const storedToken = window.localStorage.getItem('token');
-    const decodedToken = jwtDecode(storedToken);
-
-    const hasUserRole = decodedToken.roles.includes('ROLE_USER');
-    const hasAdminRole = decodedToken.roles.includes('ROLE_ADMIN');
-    
-    return { hasUserRole, hasAdminRole};
-}
+// Function qui récupére le token dans le localStorage & le décode pour récupérer le role & le mail de l'user
+export default function jwtDecodeToken() {
+    const token = localStorage.getItem('token');
+    if (token) {
+        // console.log(token)
+        return jwtDecode(token);
+    }
+    return null;
+};

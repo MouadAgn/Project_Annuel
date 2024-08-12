@@ -18,14 +18,15 @@ export default function List({ users, files, dataType }) {
     if (data.length === 0) {
         return <p>Loading...</p>;
     }
-    // console.log(data)
+    console.log(data)
 
     // Create the table headers based on the data type
     const tableHeaders = dataType === 'users' ? (
         <tr>
           <th>Utilisateur</th>
-          <th>Stockage total</th>
-          <th>Stockage restant</th>
+          <th>Stockage total en Go</th>
+          <th>Stockage utilisé en Go</th>
+          <th>Pourcentage utilisé</th>
           <th>Date de création</th>
           <th>Voir plus</th>
         </tr>
@@ -40,9 +41,10 @@ export default function List({ users, files, dataType }) {
     // Create the table body based on the data type
     const tableBody = data.map((item) => (
         <tr key={item.id}>
-            <td>{dataType === 'users' ? item.name : item.nameFile}</td>
+            <td>{dataType === 'users' ? item.name + " " + item.firstName : item.nameFile}</td>
             <td>{dataType === 'users' ? item.storageCapacity : item.weight}</td>
-            <td>{dataType === 'users' ? item.storageRemaining : null}</td>
+            <td>{dataType === 'users' ? item.storageUsed : null}</td>
+            <td>{dataType === 'users' ? item.storageUsagePercentage : null}%</td>
             <td>{dataType === 'users' ? item.createdDate : item.uploadDate}</td>
             <td>{dataType === 'users' ? <button>Voir plus</button> : null}</td>
         </tr>

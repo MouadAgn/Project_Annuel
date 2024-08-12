@@ -1,6 +1,9 @@
 import React, { useEffect, useState } from 'react';
+// import { Navigate } from 'react-router-dom';
+// import { useAuth } from '@services/Security';
 
 const ListFile = () => {
+    // const { user } = useAuth();
     const [files, setFiles] = useState([]);
     const [error, setError] = useState(null);
     const [searchTerm, setSearchTerm] = useState('');
@@ -43,6 +46,8 @@ const ListFile = () => {
     const handleSearch = (event) => {
         setSearchTerm(event.target.value);
     };
+
+    // console.log(user)
 
     // Filtrer les fichiers en fonction du terme de recherche
     const filteredFiles = files.filter(file => {

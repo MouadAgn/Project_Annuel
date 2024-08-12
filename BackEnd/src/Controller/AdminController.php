@@ -2,6 +2,8 @@
 
 namespace App\Controller;
 
+use App\Service\UserStorageService;
+
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
@@ -14,18 +16,16 @@ use App\Entity\User;
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\EntityManagerInterface;
 
-use Psr\Log\LoggerInterface;
-
 class AdminController extends AbstractController
 {
 
     private $em;
-    private $logger;
+    private $userStorageService;
 
-    public function __construct(EntityManagerInterface $em, LoggerInterface $logger)
+    public function __construct(EntityManagerInterface $em, UserStorageService $userStorageService)
     {
         $this->em = $em;
-        $this->logger = $logger;
+        $this->userStorageService = $userStorageService;
     }
 
     /**
@@ -34,23 +34,40 @@ class AdminController extends AbstractController
     #[Route('/api/admin/users', name: 'getUsers', methods: ['GET'])]
     public function getAllUsers(): Response
     {
-        $criteria = new Criteria();
-        $criteria->where(Criteria::expr()->eq('role', User::ROLE_USER));
+        try {
+            $criteria = new Criteria();
+            $criteria->where(Criteria::expr()->eq('role', User::ROLE_USER));
 
-        $users = $this->em->getRepository(User::class)->matching($criteria);
+            $users = $this->em->getRepository(User::class)->matching($criteria);
 
-        $filterUsers = $users->map(function ($user) {
-            return [
-                'id' => $user->getId(),
-                'name' => $user->getName(),
-                'firstName' => $user->getFirstName(),
-                'storageCapacity' => $user->getStorageCapacity(),
-                'createdDate' => $user->getCreatedDate()->format('Y-m-d'),
-                'role' => $user->getRole()
-            ];
-        });
+            $filterUsers = $users->map(function ($user) {
+                $storageCapacityGB = $this->userStorageService->getUserStorageCapacityInGB($user);
+                $storageUsedGB = $this->userStorageService->calculateTotalStorageUsed($user);
 
-        return $this->json($filterUsers);
+                return [
+                    'id' => $user->getId(),
+                    'name' => $user->getName(),
+                    'firstName' => $user->getFirstName(),
+                    'storageCapacity' => $storageCapacityGB,
+                    'storageUsed' => $storageUsedGB,
+                    'storageUsagePercentage' => $this->calculateStorageUsagePercentage($storageUsedGB, $storageCapacityGB),
+                    'createdDate' => $user->getCreatedDate()->format('Y-m-d')
+                    // 'role' => $user->getRole()
+                ];
+            });
+
+            return $this->json($filterUsers);
+        } catch (\Exception $e) {
+            return new JsonResponse(['status' => 'KO', 'message' => 'Users not found!'], JsonResponse::HTTP_NOT_FOUND);
+        }
+    }
+
+    private function calculateStorageUsagePercentage(float $used, float $total): float
+    {
+        if ($total == 0) {
+            return 0;
+        }
+        return round(($used / $total) * 100, 2);
     }
 
     /**
@@ -59,12 +76,16 @@ class AdminController extends AbstractController
     #[Route('/api/admin/{id}', name: 'getUser', methods: ['GET'])]
     public function getUserById(Request $request, int $id): Response
     {
-        $user = $this->em->getRepository(User::class)->find($id);
+        try {
+            $user = $this->em->getRepository(User::class)->find($id);
 
-        // $this->logger->debug('Test Monolog');
-        // $this->logger->debug('Request URI: ' . $request->getUri());
-        // $this->logger->debug('Request Headers: ' . json_encode($request->headers->all()));
-        return $this->json($user, context: ['groups' => 'user']);
+            // $this->logger->debug('Test Monolog');
+            // $this->logger->debug('Request URI: ' . $request->getUri());
+            // $this->logger->debug('Request Headers: ' . json_encode($request->headers->all()));
+            return $this->json($user, context: ['groups' => 'user']);
+        } catch (\Exception $e) {
+            return new JsonResponse(['status' => 'KO', 'message' => 'User not found!'], JsonResponse::HTTP_NOT_FOUND);
+        }
     }
 
     /**
