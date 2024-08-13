@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import ModifyProfile from '@components/ModifyAccount/modifyAccount.jsx';
 import DeleteAccount from '@components/DeleteAccount/deleteAccount.jsx';
+import cardStorage from '@components/CardBuyStorage/cardStorage.jsx';
 import Api from '@services/Api.jsx';
 
 import './profile.css';
+import CardStorage from '../../components/CardBuyStorage/cardStorage';
 
 export default function Profile() {
     const [errorMessage, setErrorMessage] = useState('');
@@ -55,6 +57,7 @@ export default function Profile() {
                             <p>Adresse : {data.user.address}</p>
                             <p>Go total : {data.totalStorageCapacity}</p>
                             <p>Go utilisé : {data.totalStorageUsed}</p>
+                            <CardStorage />
                             <button onClick={handleEditClick}>Modifier</button>
                             <DeleteAccount />
                         </>
