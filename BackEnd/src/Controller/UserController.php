@@ -2,7 +2,10 @@
 
 namespace App\Controller;
 
+use App\Service\UserStorageService;
+
 use App\Entity\User;
+
 use Doctrine\ORM\EntityManagerInterface;
 
 use Symfony\Component\HttpFoundation\Request;
@@ -19,11 +22,13 @@ class UserController extends AbstractController
 {
     private $em;
     private $mailer;
+    private $userStorageService;
 
-    public function __construct(EntityManagerInterface $em, MailerInterface $mailer)
+    public function __construct(EntityManagerInterface $em, MailerInterface $mailer, UserStorageService $userStorageService)
     {
         $this->em = $em;
         $this->mailer = $mailer;
+        $this->userStorageService = $userStorageService;
     }
 
     /**
@@ -32,23 +37,30 @@ class UserController extends AbstractController
     #[Route('/profile', name: 'profile', methods: ['GET'])]
     public function getUserProfile(): JsonResponse
     {
-        // Get the current user from the token
+        /** @var User $user */
         $user = $this->getUser();
     
         if (!$user) {
-            // Return an error if the user is not found or not authenticated
             return $this->json(['status' => 'KO', 'message' => 'User not found or not authenticated'], status: JsonResponse::HTTP_FORBIDDEN);
         }
-    
-        //  Return the user's information
-        return $this->json($user, context: ['groups' => 'user']);
+
+        $totalStorageCapacity = $this->userStorageService->getUserStorageCapacityInGB($user);
+        $totalStorageUsed = $this->userStorageService->calculateTotalStorageUsed($user);
+
+        $userData = [ 
+            'user' => $user,
+            'totalStorageCapacity' => $totalStorageCapacity,
+            'totalStorageUsed' => $totalStorageUsed,
+        ];
+
+        return $this->json($userData, context: ['groups' => 'user']);
     }
 
     /**
      * Route for updating a user's information
      */
     #[Route('/update', name: 'update', methods: ['PATCH'])]
-    public function updateUser(int $id, Request $request): JsonResponse
+    public function updateUser(Request $request): JsonResponse
     {
         try {
 
@@ -100,14 +112,22 @@ class UserController extends AbstractController
     
             foreach ($data as $field => $value) {
                 switch ($field) {
-                    case 'name': $user->setName($value); break;
-                    case 'firstName': $user->setFirstName($value); break;
-                    case 'password': $user->setPassword($value); break;
-                    case 'mail': $user->setMail($value); break;
-                    case 'address': $user->setAddress($value); break;
-                    case 'zipCode': $user->setZipCode($value); break;
-                    case 'city': $user->setCity($value); break;
-                    case 'country': $user->setCountry($value); break;
+                    case 'name': $user->setName($value); 
+                        break;
+                    case 'firstName': $user->setFirstName($value); 
+                        break;
+                    case 'password': $user->setPassword($value); 
+                        break;
+                    case 'mail': $user->setMail($value); 
+                        break;
+                    case 'address': $user->setAddress($value); 
+                        break;
+                    case 'zipCode': $user->setZipCode($value); 
+                        break;
+                    case 'city': $user->setCity($value); 
+                        break;
+                    case 'country': $user->setCountry($value); 
+                        break;
                 }
             }
     

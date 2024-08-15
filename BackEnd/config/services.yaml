@@ -22,6 +22,10 @@ services:
             $logger: '@logger'
         tags:
             - { name: kernel.event_listener, event: kernel.request }
+
+    App\Service\UserStorageService : 
+        arguments:
+            $em: '@Doctrine\ORM\EntityManagerInterface'
 # Déclaration du service EntityManagerInterface
     Doctrine\ORM\EntityManagerInterface:
         alias: doctrine.orm.entity_manager

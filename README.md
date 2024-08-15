@@ -18,6 +18,13 @@ Ajouter des fakes données :
 
 `php bin/console doctrine:fixtures:load`
 
+Démarrer le serveur : 
+
+`cd .\BackEnd`
+
+
+`symfony serve`
+
 
 #### MAILER : 
 Pour mettre en place la simulation d'envoi de mail : 
@@ -30,3 +37,9 @@ Installer les dépendances :
 `cd .\FrontEnd`
 
 `npm i`
+
+Démarrer le serveur : 
+
+`cd .\FrontEnd`
+
+`npm run dev`
