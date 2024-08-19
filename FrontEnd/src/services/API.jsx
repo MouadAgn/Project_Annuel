@@ -165,6 +165,27 @@ class Api {
         }
     }
 
+    async createPaymentIntent(token) {
+        try {
+            const response = await fetch(`${this.baseUrl}/create-payment-intent`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                }
+            });
+            if (response.status === 200) {
+                const data = await response.json();
+                return data;
+            } else {
+                throw new Error("Invalid token");
+            }
+        }
+        catch (error) {
+            throw error;
+        }
+    }
+
     /* END USER ROUTES */
 
     

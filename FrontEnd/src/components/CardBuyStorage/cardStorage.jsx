@@ -1,52 +1,104 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
+import { Elements } from '@stripe/react-stripe-js';
+import { loadStripe } from '@stripe/stripe-js';
+import CheckoutForm from '@components/checkout';
 
-const PurchaseStorage = () => {
-  const [storage, setStorage] = useState();
-  const [showModal, setShowModal] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
+import Api from '@services/Api';
 
-  const handlePurchaseClick = () => {
-    setShowModal(true);
-  };
+const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 
-  const handleConfirmPurchase = async () => {
-    setIsLoading(true);
-    
-    // Simuler l'intégration de paiement
-    try {
-      // Intégration d'une API de paiement ici, ex : Stripe, PayPal, etc.
-      // const paymentResult = await processPayment(storagePrice);
+const PurchaseStorage = ({userName, errorMessage, setErrorMessage}) => {
+    const [showModal, setShowModal] = useState(false);
+    const [isLoading, setIsLoading] = useState(false);
+    const [showCheckout, setShowCheckout] = useState(false);
+    const [clientSecret, setClientSecret] = useState('');
 
-      // Si le paiement est réussi, ajouter l'espace de stockage
-      setStorage(storage + 20);
-      setShowModal(false);
-    } catch (error) {
-      console.error('Erreur lors du paiement:', error);
-      // Gérer l'erreur de paiement ici
-    } finally {
-      setIsLoading(false);
-    }
-  };
+    // console.log(userName);
+    const api = new Api();
 
-  return (
-    <div>
-      {/* <h2>Acheter plus d'espace de stockage !</h2> */}
-      <button onClick={handlePurchaseClick}>Acheter 20 Go pour 20€</button>
+    const appearance = {
+        theme: 'night',
+        variables: {
+          fontFamily: 'Sohne, system-ui, sans-serif',
+          fontWeightNormal: '500',
+          borderRadius: '8px',
+          colorBackground: '#0A2540',
+          colorPrimary: '#EFC078',
+          accessibleColorOnColorPrimary: '#1A1B25',
+          colorText: 'white',
+          colorTextSecondary: 'white',
+          colorTextPlaceholder: '#ABB2BF',
+          tabIconColor: 'white',
+          logoColor: 'dark'
+        },
+        rules: {
+          '.Input': {
+            backgroundColor: '#212D63',
+            border: '1px solid var(--colorPrimary)'
+          }
+        }
+      };
 
-      {showModal && (
-        <div className="modal">
-          <h3>Confirmer l'achat</h3>
-          <p>Voulez-vous vraiment acheter 20 Go pour 20€ ?</p>
-          <button onClick={handleConfirmPurchase} disabled={isLoading}>
-            {isLoading ? 'Paiement en cours...' : 'Confirmer'}
-          </button>
-          <button onClick={() => setShowModal(false)} disabled={isLoading}>
-            Annuler
-          </button>
+    const handlePurchaseClick = () => {
+        setShowModal(true);
+    };
+
+    const handleConfirmPurchase = async () => {
+        setIsLoading(true);
+        try {
+            const data = await api.createPaymentIntent(api.token);
+
+            setClientSecret(data.clientSecret);
+            setShowCheckout(true);
+        } catch (error) {
+            setErrorMessage('Erreur lors de la création de l\'intention de paiement');
+        } finally {
+            setIsLoading(false);
+        }
+    };
+
+    const HidePaiement = () => {
+        setShowModal(false);
+        setShowCheckout(false);
+    };
+
+    return (
+        <div>
+        <button onClick={handlePurchaseClick}>
+            Ajouter plus d'espace à votre Stockage
+        </button>
+
+        {showModal && (
+            <div className="modal">
+            <h2>Ajouter 20 Go pour 20 euros !</h2>
+            <p>Paiement unique</p>
+            <p>Disponible de suite</p>
+            <p>Voulez-vous vraiment acheter 20 Go pour 20€ ?</p>
+            <button onClick={handleConfirmPurchase} disabled={isLoading}>
+                {isLoading ? 'Chargement...' : 'Confirmer'}
+            </button>
+            <button onClick={() => { setShowCheckout(false); setShowModal(false); }} disabled={isLoading}>
+                Annuler
+            </button>
+            </div>
+        )}
+
+        {showCheckout && clientSecret && (
+            <Elements stripe={stripePromise} options={{ clientSecret, appearance}}>
+                <CheckoutForm 
+                    // clientSecret={clientSecret}
+                    hidePaiement={HidePaiement}
+                    setShowModal={setShowModal}
+                    setShowCheckout={setShowCheckout}
+                    userName={userName}
+                    isLoading={isLoading}
+                    setErrorMessage={setErrorMessage}
+                />
+            </Elements>
+        )}
+        {errorMessage && <p>{errorMessage}</p>}
         </div>
-      )}
-    </div>
-  );
+    );
 };
 
 export default PurchaseStorage;

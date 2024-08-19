@@ -26,6 +26,12 @@ services:
     App\Service\UserStorageService : 
         arguments:
             $em: '@Doctrine\ORM\EntityManagerInterface'
+
+    App\Controller\PaymentController:
+        autowire: true
+        tags: ['controller.service_arguments']
+
+        
 # Déclaration du service EntityManagerInterface
     Doctrine\ORM\EntityManagerInterface:
         alias: doctrine.orm.entity_manager

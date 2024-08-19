@@ -4,7 +4,6 @@ import React, { useState, useEffect } from 'react';
 import List from '@components/List/List.jsx'
 import ResearchFilter from '@components/ResearchFilter/ResearchFilter.jsx'
 import Api from '@services/Api.jsx';
-// import { useAuth } from '@services/Security.jsx';
 
 
 export default function Dashboard() {
@@ -28,7 +27,6 @@ export default function Dashboard() {
                 console.error(error);
             }
         };
-      
           fetchData();
     }, []);
 

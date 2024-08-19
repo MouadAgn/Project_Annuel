@@ -26,6 +26,7 @@ export default function Login() {
         e.preventDefault();
         const success = await login(mail, password);
         if (success) {
+            localStorage.setItem('token', token);
             navigate('/home');
         } else {
             setErrorMessage('Login failed. Please check your credentials.');

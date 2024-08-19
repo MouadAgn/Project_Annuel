@@ -1,11 +1,10 @@
 import React, { useState, useEffect } from 'react';
 import ModifyProfile from '@components/ModifyAccount/modifyAccount.jsx';
 import DeleteAccount from '@components/DeleteAccount/deleteAccount.jsx';
-import cardStorage from '@components/CardBuyStorage/cardStorage.jsx';
+import CardStorage from '@components/CardBuyStorage/cardStorage.jsx';
 import Api from '@services/Api.jsx';
 
 import './profile.css';
-import CardStorage from '../../components/CardBuyStorage/cardStorage';
 
 export default function Profile() {
     const [errorMessage, setErrorMessage] = useState('');
@@ -25,20 +24,23 @@ export default function Profile() {
             setData(userData);
         } catch (error) {
             setErrorMessage('Erreur lors de la récupération des données');
-            console.error(error);
+            // console.error(error);
         }
     };
 
+    // Gére l'affichage du formulaire de modification du profil
     const handleEditClick = () => {
         setIsEditing(true);
     };
 
+    // Gére l'affichage du formulaire de mise à jour du compte
     const handleUpdateSuccess = () => {
         setIsEditing(false);
         fetchData();
         setErrorMessage('Profil mis à jour !');
     };
 
+    // Annule la modification du profil
     const handleCancelEdit = () => {
         setIsEditing(false);
     };
@@ -57,7 +59,13 @@ export default function Profile() {
                             <p>Adresse : {data.user.address}</p>
                             <p>Go total : {data.totalStorageCapacity}</p>
                             <p>Go utilisé : {data.totalStorageUsed}</p>
-                            <CardStorage />
+                            
+                            <CardStorage 
+                                setErrorMessage={setErrorMessage}
+                                userName={data.user.name + ' ' + data.user.firstName}
+                                // totalStorageCapacity={data.totalStorageCapacity}
+                                // totalStorageUsed={data.totalStorageUsed}
+                            />
                             <button onClick={handleEditClick}>Modifier</button>
                             <DeleteAccount />
                         </>

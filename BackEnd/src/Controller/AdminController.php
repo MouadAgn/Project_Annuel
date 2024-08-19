@@ -79,9 +79,6 @@ class AdminController extends AbstractController
         try {
             $user = $this->em->getRepository(User::class)->find($id);
 
-            // $this->logger->debug('Test Monolog');
-            // $this->logger->debug('Request URI: ' . $request->getUri());
-            // $this->logger->debug('Request Headers: ' . json_encode($request->headers->all()));
             return $this->json($user, context: ['groups' => 'user']);
         } catch (\Exception $e) {
             return new JsonResponse(['status' => 'KO', 'message' => 'User not found!'], JsonResponse::HTTP_NOT_FOUND);

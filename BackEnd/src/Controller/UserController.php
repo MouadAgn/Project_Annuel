@@ -5,6 +5,7 @@ namespace App\Controller;
 use App\Service\UserStorageService;
 
 use App\Entity\User;
+use App\Entity\Invoice;
 
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -158,10 +159,11 @@ class UserController extends AbstractController
             }
             
             $userName = $user->getName();
+
             // Get the number of files
             $userNbFiles = $user->getFiles()->count();
 
-            // Set to null the user in the invoices
+            // Set to null the user_id in the invoices
             $invoices = $user->getInvoices();
             foreach ($invoices as $invoice) {
                 $invoice->setUser(null);
@@ -197,7 +199,7 @@ class UserController extends AbstractController
     /**
      * Route for adding storage to a user
      */
-    #[Route('/add_storage', name: 'addStorage', methods: ['PUT'])]
+    #[Route('/addStorage', name: 'addStorage', methods: ['PUT'])]
     public function addStorage(): JsonResponse
     {
         try {
@@ -211,6 +213,14 @@ class UserController extends AbstractController
             * @var User $user
             */
             $user->setStorageCapacity($user->getStorageCapacity() + 20000);
+
+            $invoice = new Invoice();
+            $invoice->setPdf('invoice.pdf');
+            $invoice->setUser($user);
+            
+            $this->em->persist($invoice);
+            $this->em->flush();
+            // $user->addInvoice($invoice);
 
             $this->em->persist($user);
             $this->em->flush();
