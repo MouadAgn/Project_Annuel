@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
 use TCPDF;
+use Symfony\Component\HttpFoundation\Response;
 
 class InvoiceController extends AbstractController
 {
@@ -24,7 +25,7 @@ class InvoiceController extends AbstractController
         $this->invoiceRepository = $invoiceRepository;
     }
 
-    #[Route("/invoice/create", name: 'invoice_create', methods: ['POST'])]
+    #[Route("/api/invoice/create", name: 'invoice_create', methods: ['POST'])]
     public function createInvoice(Request $request, ValidatorInterface $validator): JsonResponse
     {
         $data = json_decode($request->getContent(), true);
@@ -81,7 +82,7 @@ class InvoiceController extends AbstractController
     }
 
 
-    #[Route("/invoice/delete/{id}", name: 'invoice_delete', methods: ['DELETE'])]
+    #[Route("/api/invoice/delete/{id}", name: 'invoice_delete', methods: ['DELETE'])]
     public function deleteInvoice($id): JsonResponse
     {
         $invoice = $this->invoiceRepository->find($id);
@@ -95,7 +96,7 @@ class InvoiceController extends AbstractController
         return new JsonResponse(['message' => 'Invoice deleted successfully'], 200);
     }
 
-    #[Route("/invoice/{id}", name: 'invoice_get', methods: ['GET'])]
+    #[Route("/api/invoice/{id}", name: 'invoice_get', methods: ['GET'])]
     public function getInvoice($id): JsonResponse
     {
         $invoice = $this->invoiceRepository->find($id);
@@ -116,7 +117,7 @@ class InvoiceController extends AbstractController
         ], 200);
     }
     
-    #[Route("/invoices", name: 'invoice_list', methods: ['GET'])]
+    #[Route("/api/invoices", name: 'invoice_list', methods: ['GET'])]
     public function listInvoices(): JsonResponse
     {
         $invoices = $this->invoiceRepository->findAll();
@@ -138,4 +139,22 @@ class InvoiceController extends AbstractController
 
         return new JsonResponse($invoiceData, 200);
     }
+
+    #[Route("/api/invoice/download/{id}", name: 'invoice_download', methods: ['GET'])]
+    public function downloadInvoice($id): Response
+    {
+        $invoice = $this->invoiceRepository->find($id);
+        if (!$invoice) {
+        return new JsonResponse(['error' => 'Invoice not found'], 404);
+    }
+
+        $pdfPath = $invoice->getPdf();
+
+        if (!file_exists($pdfPath)) {
+            return new JsonResponse(['error' => 'File not found'], 404);
+        }
+
+        return $this->file($pdfPath);
+    }
+
 }
