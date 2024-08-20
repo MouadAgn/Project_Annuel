@@ -1,35 +1,36 @@
-import React, { useEffect, useState } from 'react';
+import React, { useState, useContext } from 'react';
 import { useNavigate } from 'react-router-dom';
-
-import jwtDecodeToken from '@services/Security';
-
-
+import Api from '@services/Api.jsx';
+import AuthContext from '@services/Security';
+import { jwtDecode } from 'jwt-decode';
 
 export default function Login() {
-    //test jwt-decode sur token admin
-    // const token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpYXQiOjE3MTg5NDcxOTcsImV4cCI6MTcyMDk0NzE5Nywicm9sZXMiOlsiUk9MRV9BRE1JTiJdLCJ1c2VybmFtZSI6InVzZXIxQGV4YW1wbGUuY29tIn0.K_JjsPGeq2gvPIL572jDuNjLQaOPpExO6u0IOucrp7TqzVON2N43KAQfG8gxr_YUZGue9N6fFbj8m5R2Aa7e5hDFPQsaeTNZIwiJTlKUGV2IFlGiKPIksb_YnFCgirb2VGzENlsZVWPMD4wvRQo-gpY0aU4fMJKKsTt4kEPFgFr6AqQDLZpBMI7iLEtGHrNU90gsPGx4OPu0qK7Ax_u2s72_eBqpS9-R-LhRr_-urw9AWagS274RRKK-vFWvw3TfmjIlBda-2QGd_5cnUlJ_D6zq6vndsMfHkQXXIb416DNz1zc6Hwz3uDVoPtXtY2-LiYQUKvvAVsVPzdmj82ZdZA";
-    // const decoded = jwtDecode(token);
-    // console.log(decoded);
-    
+
+    const api = new Api();
     const navigate = useNavigate();
+    const { setUser } = useContext(AuthContext);
 
     const [errorMessage, setErrorMessage] = useState('');
     const [mail, setMail] = useState('');
     const [password, setPassword] = useState('');
-
-    useEffect(() => {
-        const decodedToken = jwtDecodeToken();
-        console.log(decodedToken)
-    }, []);
   
     const handleSubmit = async (e) => {
         e.preventDefault();
-        const success = await login(mail, password);
-        if (success) {
-            localStorage.setItem('token', token);
-            navigate('/home');
-        } else {
-            setErrorMessage('Login failed. Please check your credentials.');
+
+        try {
+            const response = await api.getCredentials(mail, password);
+            // console.log(response);
+            if (response) {
+                localStorage.setItem('token', response);
+                const decodedToken = jwtDecode(response);
+                setUser(decodedToken.roles[0]);
+                navigate('/profile');
+            } else {
+                setErrorMessage('Mail ou mot de passe incorrect');
+            }
+        } catch (error) {
+            console.error(error);
+            setErrorMessage('Une erreur est survenu lors de la connexion');
         }
     };
   

@@ -7,9 +7,9 @@ class Api {
     // token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpYXQiOjE3MjM0Njk1MTEsImV4cCI6MTcyNTQ2OTUxMSwicm9sZXMiOlsiUk9MRV9BRE1JTiJdLCJ1c2VybmFtZSI6InVzZXIxQGV4YW1wbGUuY29tIn0.V_6Twh78ucNIvD8PM-6YEwDtQc2RIesXr3SwIlypqPUdapCO3DbCseNRLKZ9QEb17wH-oSyFanX8t5VvR3foaGLxDcSx6mDXYwJiHPxZKLbtlB0Ops0Kxwiep5_Ry2f3cHClEcKnqNt_nmDKSAC4hAHNntzdPAJAqxWIcBDBlMSwOELiRs97PJeYUSCjrZXhVoyonElnAmLjuHuRrZPEmsP0T65SNDPv2sKw-VP0DI6m5qotOdEzxT1ow5hohyViGVaW81hwp7rv1_NjBwoxmbrZKP4cKsLIl2-nXCzDGI0dPgVhfasZmTozy-uoxICIsfxGufAAtugICTvhA1R6-w"
     
     // Token User
-    token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpYXQiOjE3MjM0Njc2MTIsImV4cCI6MTcyNTQ2NzYxMiwicm9sZXMiOlsiUk9MRV9VU0VSIl0sInVzZXJuYW1lIjoieGtsaW5nQGJhc2hpcmlhbi5jb20ifQ.KLeFZNsghwFTqIZK9x2XzFLa2F9qNrqYk3RGZqkpJQLZPa_K6QupEnM-b2cLqMYNrGm4ETCmcqVTAdIOVEznhbhHVzqK8XXFt6P-hCgRixh7Nan6G1Rd6zNuRi0U-u3sMgQgwsb-cwsuTbrHD2btOqMLIZLAGfv2oPLvZkTrNjHNrfmGL_aFbSjOxaV4ft90uuegYx2NzFujWgPvGT0LRJ5SuwVArLWwMrmPBrL1YM4H3s0liG67T_YxP-sJ03Y2Svy9Pl37o_wKEsXTD5toVUr4L_8oTj9zHp44Sya7yXRbEcqUbsbjxnUjLG2eQVOrP7ekg94B9QssO9lGBHctbA"
+    // token = "eyJ0eXAiOiJKV1QiLCJhbGciOiJSUzI1NiJ9.eyJpYXQiOjE3MjM0Njc2MTIsImV4cCI6MTcyNTQ2NzYxMiwicm9sZXMiOlsiUk9MRV9VU0VSIl0sInVzZXJuYW1lIjoieGtsaW5nQGJhc2hpcmlhbi5jb20ifQ.KLeFZNsghwFTqIZK9x2XzFLa2F9qNrqYk3RGZqkpJQLZPa_K6QupEnM-b2cLqMYNrGm4ETCmcqVTAdIOVEznhbhHVzqK8XXFt6P-hCgRixh7Nan6G1Rd6zNuRi0U-u3sMgQgwsb-cwsuTbrHD2btOqMLIZLAGfv2oPLvZkTrNjHNrfmGL_aFbSjOxaV4ft90uuegYx2NzFujWgPvGT0LRJ5SuwVArLWwMrmPBrL1YM4H3s0liG67T_YxP-sJ03Y2Svy9Pl37o_wKEsXTD5toVUr4L_8oTj9zHp44Sya7yXRbEcqUbsbjxnUjLG2eQVOrP7ekg94B9QssO9lGBHctbA"
 
-    async getToken(mail, password) {
+    async getCredentials(mail, password) {
         try  {
             const response = await fetch(`${this.baseUrl}/login_check`, {
                 method: "POST",

@@ -10,7 +10,7 @@ export default function Profile() {
     const [errorMessage, setErrorMessage] = useState('');
     const [data, setData] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
-    const [showDeleteAccount, setShowDeleteAccount] = useState(false);
+    // const [showDeleteAccount, setShowDeleteAccount] = useState(false);
 
     const api = new Api();
 
@@ -20,8 +20,16 @@ export default function Profile() {
 
     const fetchData = async () => {
         try {
-            const userData = await api.getUserProfile(api.token);
+            // Retrieve token from localStorage
+            const token = localStorage.getItem('token');
+
+            if (!token) {
+                throw new Error('Missing token in localStorage');
+            }
+
+            const userData = await api.getUserProfile(token);
             setData(userData);
+            
         } catch (error) {
             setErrorMessage('Erreur lors de la récupération des données');
             // console.error(error);
