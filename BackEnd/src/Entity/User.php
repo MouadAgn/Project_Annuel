@@ -53,7 +53,6 @@ class User implements PasswordAuthenticatedUserInterface, UserInterface
     #[ORM\Column(length: 100, nullable: true)]
     private ?string $country = null;
     
-    #[Groups(['user'])]
     #[ORM\Column]
     // Megaoctets
     private ?int $storageCapacity = 20000;
@@ -210,7 +209,7 @@ class User implements PasswordAuthenticatedUserInterface, UserInterface
         return $this->role === self::ROLE_ADMIN;
     }
 
-    public function getStorageCapacity(): ?int
+    public function getStorageCapacity(): int
     {
         return $this->storageCapacity;
     }
