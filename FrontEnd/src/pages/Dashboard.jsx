@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from 'react';
 // import { useNavigate } from 'react-router-dom';
 
-import List from '@components/List/List.jsx'
+
 import ResearchFilter from '@components/ResearchFilter/ResearchFilter.jsx'
 import Api from '@services/Api.jsx';
 
