@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faFolder, faFile } from '@fortawesome/free-solid-svg-icons';
@@ -7,7 +7,7 @@ import './FileManager.css';
 const AddFileToFolder = () => {
   const [folders, setFolders] = useState([]);
   const [files, setFiles] = useState([]);
-  const [selectedFolder, setSelectedFolder] = useState('');
+
   const [error, setError] = useState('');
   const [successMessage, setSuccessMessage] = useState('');
 
@@ -30,7 +30,7 @@ const AddFileToFolder = () => {
   const moveFile = async (fileId, folderId) => {
     try {
       const url = `https://127.0.0.1:8000/api/folders/${folderId}/files`;
-      const response = await axios.post(url, 
+      await axios.post(url, 
         JSON.stringify({ fileId: fileId }), 
         {
           headers: {

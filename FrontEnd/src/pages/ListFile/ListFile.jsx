@@ -1,11 +1,11 @@
-import React, { useEffect, useState } from 'react';
+import  { useEffect, useState } from 'react';
 import { Download, Trash2 } from 'lucide-react';
 import './ListFile.css';  // Assuming you save the CSS in a file named ListFile.css
 
 const ListFile = () => {
     const [files, setFiles] = useState([]);
     const [error, setError] = useState(null);
-    const [searchTerm, setSearchTerm] = useState('');
+    const [searchTerm] = useState('');
 
     useEffect(() => {
         fetch(`https://127.0.0.1:8000/api/list-files`)
@@ -54,7 +54,7 @@ const ListFile = () => {
                             <th>Nom</th>
                             <th>Taille</th>
                             <th>Extension</th>
-                            <th>Date D'Upload</th>
+                            <th>Date DUpload</th>
                             <th>Actions</th>
                         </tr>
                     </thead>

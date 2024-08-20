@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Download, Trash2 } from 'lucide-react';
 import Modal from './Modal';
@@ -95,7 +95,7 @@ const FolderFileList = () => {
                   <th>Nom</th>
                   <th>Taille</th>
                   <th>Extension</th>
-                  <th>Date D'Upload</th>
+                  <th>Date D Upload</th>
                   <th>Actions</th>
                 </tr>
               </thead>
