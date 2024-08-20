@@ -33,11 +33,11 @@ class InvoiceController extends AbstractController
     {
         $data = json_decode($request->getContent(), true);
 
-        if (empty($data['user_id'])) {
+        if (empty($data['id'])) {
             return new JsonResponse(['error' => 'Invalid data'], 400);
         }
 
-        $user = $this->entityManager->getRepository(User::class)->find($data['user_id']);
+        $user = $this->entityManager->getRepository(User::class)->find($data['id']);
         if (!$user) {
             return new JsonResponse(['error' => 'User not found'], 404);
         }
@@ -52,63 +52,103 @@ class InvoiceController extends AbstractController
 
         
         $htmlContent = "
-        <style>
-            body { font-family: Arial, sans-serif; }
-            h1 { color: #333; }
-            p { color: #666; line-height: 1.6; }
-            .email-template {
-                width: 100%;
-                padding: 20px;
-                border: 1px solid #ddd;
-                border-radius: 5px;
-                background-color: #f9f9f9;
-                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-            }
-            .email-header {
-                display: flex;
-                justify-content: space-between;
-                align-items: flex-start;
-                margin-bottom: 20px;
-            }
-            .email-header .left {
-                text-align: left;
-            }
-            .email-header .right {
-                text-align: right;
-                font-weight: bold;
-            }
-            .email-body {
-                margin-bottom: 20px;
-            }
-            .email-footer {
-                border-top: 1px solid #ddd;
-                padding-top: 10px;
-                text-align: center;
-                color: #888;
-            }
-        </style>
+            <style>
+                body { font-family: Arial, sans-serif; }
+                h1 { color: #333; }
+                p { color: #666; line-height: 1.6; }
+                .invoice-template {
+                    width: 100%;
+                    padding: 20px;
+                    border: 1px solid #ddd;
+                    border-radius: 5px;
+                    background-color: #f9f9f9;
+                    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                }
+                .invoice-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: flex-start;
+                    margin-bottom: 20px;
+                }
+                .invoice-header .left {
+                    text-align: left;
+                }
+                .invoice-header .right {
+                    text-align: right;
+                    font-weight: bold;
+                }
+                .invoice-body {
+                    margin-bottom: 20px;
+                }
+                .invoice-footer {
+                    border-top: 1px solid #ddd;
+                    padding-top: 10px;
+                    text-align: center;
+                    color: #888;
+                }
+                .table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-bottom: 20px;
+                }
+                .table th, .table td {
+                    border: 1px solid #ddd;
+                    padding: 8px;
+                    text-align: left;
+                }
+                .table th {
+                    background-color: #f2f2f2;
+                }
+                .total {
+                    text-align: right;
+                }
+                .total-amount {
+                    font-weight: bold;
+                    font-size: 1.2em;
+                }
+            </style>
         
-        <div class='email-template'>
-            <div class='email-header'>
-                <div class='left'>
-                    <h1>Facture</h1>
+            <div class='invoice-template'>
+                <div class='invoice-header'>
+                    <div class='left'>
+                        <h1>FACTURE N° " . $invoice->getId() . "</h1>
+                        <p><strong>Nom de l'entreprise : </strong> " . "Tech Innovators SARL" . "</p>
+                        <p><strong>Adresse : </strong> " . "12 Rue des Entrepreneurs, 75015 Paris, France" . "</p>
+                        <p><strong>SIRET : </strong> " . "812 345 678 00012" . "</p>
+                    </div>
+                    <div class='right'>
+                        <p><strong>Date de facture:</strong> " . $invoice->getPurchasedDate()->format('Y-m-d') . "</p>
+                        <p><strong>Nom du client:</strong> " . $user->getName() . "</p>
+                        <p><strong>Adresse du client:</strong> " . $user->getAddress() . "</p>
+                    </div>
                 </div>
-                <div class='right'>
-                    <p> <strong>" . $invoice->getPurchasedDate()->format('Y-m-d') . "</strong>.</p>
-                    <p> <strong>" . $user->getAddress() . "</strong>.</p>
+        
+                <div class='invoice-body'>
+                    <table class='table'>
+                        <thead>
+                            <tr>
+                                <th>item</th>
+                                <th>Prix unitaire HT</th>
+                                <th>Quantité</th>
+                                <th>Montant HT</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>20go</td>
+                                <td>" . "$16.00" . " €</td>
+                                <td>" . "1" . "</td>
+                                <td>" . "$16.00" . " €</td>
+                            </tr>
+                        </tbody>
+                    </table>
+        
+                    <p class='total'><strong>Total HT:</strong> " . "$16.00 HT" . " €</p>
+                    <p class='total'><strong>TVA (" . "20%" . "%):</strong> " . "20%" . " €</p>
+                    <p class='total total-amount'><strong>Total TTC:</strong> " . "$20.00 TTC" . " €</p>
                 </div>
+        
             </div>
-            <div class='email-body'>
-                <p>Bonjour Mr. {$user->getName()},</p>
-                <p>Voici votre facture numéro <strong>#{$invoice->getId()}</strong>, d'un montant total de <strong>$20</strong>.</p>
-                <p>Merci pour votre achat !</p>
-                
-                <p>Si vous avez des questions, n'hésitez pas à nous contacter à <strong>{$user->getMail()}</strong>.</p>
-            </div>
-            <div class='email-footer'>
-                <p>Merci de votre confiance.</p>
-            </div>
-        </div>
         ";
 
         $pdf->writeHTML($htmlContent);
