@@ -1,12 +1,12 @@
 <?php
 
 namespace App\Controller;
-
 use App\Entity\Invoice;
 use App\Entity\User;
 use App\Repository\InvoiceRepository;
 use Doctrine\ORM\EntityManagerInterface;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
+use Symfony\Bundle\SecurityBundle\Security;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\Routing\Annotation\Route;
@@ -18,12 +18,15 @@ class InvoiceController extends AbstractController
 {
     private $entityManager;
     private $invoiceRepository;
+    private $security;
 
-    public function __construct(EntityManagerInterface $entityManager, InvoiceRepository $invoiceRepository)
+
+    public function __construct(EntityManagerInterface $entityManager, InvoiceRepository $invoiceRepository, Security $security)
     {
         $this->entityManager = $entityManager;
         $this->invoiceRepository = $invoiceRepository;
-    }
+        $this->security = $security;
+    }    
 
     #[Route("/api/invoice/create", name: 'invoice_create', methods: ['POST'])]
     public function createInvoice(Request $request, ValidatorInterface $validator): JsonResponse
@@ -47,14 +50,65 @@ class InvoiceController extends AbstractController
         $pdf = new TCPDF();
         $pdf->AddPage();
 
+        
         $htmlContent = "
-            <h1>Invoice #{$invoice->getId()}</h1>
-            <p>User ID: {$user->getId()}</p>
-            <p>Name: {$user->getName()}</p>
-            <p>Surname: {$user->getUsername()}</p>
-            <p>Email: {$user->getMail()}</p>
-            <p>Price: $20</p>
-            <p>Date: " . $invoice->getPurchasedDate()->format('Y-m-d H:i:s') . "</p>
+        <style>
+            body { font-family: Arial, sans-serif; }
+            h1 { color: #333; }
+            p { color: #666; line-height: 1.6; }
+            .email-template {
+                width: 100%;
+                padding: 20px;
+                border: 1px solid #ddd;
+                border-radius: 5px;
+                background-color: #f9f9f9;
+                box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+            }
+            .email-header {
+                display: flex;
+                justify-content: space-between;
+                align-items: flex-start;
+                margin-bottom: 20px;
+            }
+            .email-header .left {
+                text-align: left;
+            }
+            .email-header .right {
+                text-align: right;
+                font-weight: bold;
+            }
+            .email-body {
+                margin-bottom: 20px;
+            }
+            .email-footer {
+                border-top: 1px solid #ddd;
+                padding-top: 10px;
+                text-align: center;
+                color: #888;
+            }
+        </style>
+        
+        <div class='email-template'>
+            <div class='email-header'>
+                <div class='left'>
+                    <h1>Facture</h1>
+                </div>
+                <div class='right'>
+                    <p> <strong>" . $invoice->getPurchasedDate()->format('Y-m-d') . "</strong>.</p>
+                    <p> <strong>" . $user->getAddress() . "</strong>.</p>
+                </div>
+            </div>
+            <div class='email-body'>
+                <p>Bonjour Mr. {$user->getName()},</p>
+                <p>Voici votre facture numéro <strong>#{$invoice->getId()}</strong>, d'un montant total de <strong>$20</strong>.</p>
+                <p>Merci pour votre achat !</p>
+                
+                <p>Si vous avez des questions, n'hésitez pas à nous contacter à <strong>{$user->getMail()}</strong>.</p>
+            </div>
+            <div class='email-footer'>
+                <p>Merci de votre confiance.</p>
+            </div>
+        </div>
         ";
 
         $pdf->writeHTML($htmlContent);
@@ -155,6 +209,43 @@ class InvoiceController extends AbstractController
         }
 
         return $this->file($pdfPath);
+    }
+
+    #[Route("/api/user/invoices", name: 'user_invoices', methods: ['GET'])]
+    public function listUserInvoices(): JsonResponse
+    {
+        // Récupérer l'utilisateur actuellement connecté
+        $user = $this->getUser();
+    
+        // Vérifier si l'utilisateur est authentifié
+        if (!$user) {
+            return new JsonResponse(['error' => 'User not authenticated'], 401);
+        }
+    
+        // Vérifiez que l'utilisateur est bien une instance de votre classe User
+        if (!$user instanceof User) {
+            return new JsonResponse(['error' => 'Invalid user type'], 500);
+        }
+    
+        // Récupérer les factures de l'utilisateur
+        $invoices = $this->invoiceRepository->findBy(['user' => $user]);
+        $invoiceData = [];
+    
+        foreach ($invoices as $invoice) {
+            $invoiceData[] = [
+                'id' => $invoice->getId(),
+                'purchasedDate' => $invoice->getPurchasedDate()->format('Y-m-d H:i:s'),
+                'pdf' => $invoice->getPdf(),
+                'user' => [
+                    'id' => $invoice->getUser()->getId(),
+                    'name' => $invoice->getUser()->getName(),
+                    'username' => $invoice->getUser()->getUsername(),
+                    'email' => $invoice->getUser()->getMail(),
+                ],
+            ];
+        }
+    
+        return new JsonResponse($invoiceData, 200);
     }
 
 }
