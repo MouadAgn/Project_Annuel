@@ -1,4 +1,4 @@
-import './ResearchFilter.css';
+// import './ResearchFilter.css';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faArrowUp, faArrowDown, faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons'
