@@ -34,6 +34,7 @@ class Api {
     }
 
     /* START ADMIN ROUTES */
+
     async getAllUsers(token) {
         try {
             const response = await fetch(`${this.baseUrl}/admin/users`, {
@@ -79,6 +80,38 @@ class Api {
     /* END ADMIN ROUTES */
 
     /* START USER ROUTES */
+
+    async Register(name, firstName, address, city, zipCode, country, mail, password) {
+        try {
+            const response = await fetch(`${this.baseUrl}/register`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                },
+                body: JSON.stringify({
+                    name: name,
+                    firstName: firstName,
+                    address: address,
+                    city: city,
+                    zipCode: zipCode,
+                    country: country,
+                    mail: mail,
+                    password: password,
+                }),
+            });
+            // console.log(response);
+            if (response.status === 200) {
+                const data = await response.json();
+                return data.token;
+            } else {
+                const errorData = await response.json();
+                // throw new Error(JSON.stringify(errorData.errors));
+                console.log(errorData);
+            }
+        } catch(error) {
+            throw error;
+        }
+    }
 
     async getUserProfile(token) {
         try {

@@ -4,8 +4,7 @@ import AddFile from '@pages/addFile'
 import ListFile from '@pages/listFile'
 import Profile from '@pages/profile/profile'
 import Logout from '@components/logout'
-
-import Login from './pages/login'
+import Login from '@pages/LoginRegister'
 
 import AuthContext, { AuthProvider } from '@services/Security';
 import React, { useContext } from 'react';

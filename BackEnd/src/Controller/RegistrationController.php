@@ -19,6 +19,8 @@ use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
 
+use Psr\Log\LoggerInterface;
+
 class RegistrationController extends AbstractController
 {
 
@@ -27,14 +29,16 @@ class RegistrationController extends AbstractController
     private $passwordHasher;
     private $JWTManager;
     private $mailer;
+    private $logger;
 
-    public function __construct(EntityManagerInterface $em, ValidatorInterface $validator, UserPasswordHasherInterface $passwordHasher, JWTTokenManagerInterface $JWTManager, MailerInterface $mailer)
+    public function __construct(EntityManagerInterface $em, ValidatorInterface $validator, UserPasswordHasherInterface $passwordHasher, JWTTokenManagerInterface $JWTManager, MailerInterface $mailer, LoggerInterface $logger)
     {
         $this->em = $em;
         $this->validator = $validator;
         $this->passwordHasher = $passwordHasher;
         $this->JWTManager = $JWTManager;
         $this->mailer = $mailer;
+        $this->logger = $logger;
     }
     
     /**
@@ -46,6 +50,9 @@ class RegistrationController extends AbstractController
         try {
             // Get the data and decode it
             $data = json_decode($request->getContent(), true);
+            // var_dump($data);
+
+            $this->logger->info('User registration', $data);
 
             // Check if the data is present and if its not empty -- UTILISER LE VALIDATOR POUR CE BLOC
             if ((!isset($data['name']) || empty($data['name'])) || 
