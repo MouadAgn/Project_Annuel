@@ -30,8 +30,13 @@ class File
     private ?string $path = null;
 
     #[ORM\ManyToOne(inversedBy: 'files')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: true)]
     private ?User $user = null;
+
+    #[ORM\ManyToOne(inversedBy: 'files')]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?Folder $folder = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -105,6 +110,18 @@ class File
     public function setUser(?User $user): static
     {
         $this->user = $user;
+
+        return $this;
+    }
+
+    public function getFolder(): ?Folder
+    {
+        return $this->folder;
+    }
+
+    public function setFolder(?Folder $folder): static
+    {
+        $this->folder = $folder;
 
         return $this;
     }
