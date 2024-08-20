@@ -116,7 +116,7 @@ class FileController extends AbstractController
  * Route pour afficher tous les fichiers dans public/uploads, méthode GET
  */
 #[Route('/api/list-files', name: 'list_files', methods: ['GET'])]
-public function listFiles(EntityManagerInterface $entityManager): JsonResponse
+public function listFiles(EntityManagerInterface $entityManager): JsonResponse 
 {
     $fileRepository = $entityManager->getRepository(File::class);
     $files = $fileRepository->findAll();
@@ -125,8 +125,11 @@ public function listFiles(EntityManagerInterface $entityManager): JsonResponse
 
     foreach ($files as $file) {
         $fileList[] = [
+            'file_id' => $file->getId(),
             'name_file' => $file->getNameFile(),
             'upload_date' => $file->getUploadDate()->format('Y-m-d H:i:s'),
+            'weight' => $file->getWeight(),
+            'format' => $file->getFormat(),
             // You can add more fields here if needed
         ];
     }

@@ -1,0 +1,29 @@
+.folders-list {
+    margin-top: 1rem;
+  }
+  
+  .folders-list ul {
+    list-style-type: none;
+    padding: 0;
+  }
+  
+  .folders-list li {
+    display: flex;
+    align-items: center;
+    padding: 0.5rem 0;
+    border-bottom: 1px solid #dee2e6;
+  }
+  
+  .folder-icon {
+    margin-right: 0.5rem;
+  }
+  
+  .folder-name {
+    font-weight: bold;
+    margin-right: auto;
+  }
+  
+  .folder-file-count {
+    color: #6c757d;
+  }
+  
