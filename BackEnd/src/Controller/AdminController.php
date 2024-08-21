@@ -52,7 +52,6 @@ class AdminController extends AbstractController
                     'storageUsed' => $storageUsedGB,
                     'storageUsagePercentage' => $this->calculateStorageUsagePercentage($storageUsedGB, $storageCapacityGB),
                     'createdDate' => $user->getCreatedDate()->format('Y-m-d')
-                    // 'role' => $user->getRole()
                 ];
             });
 

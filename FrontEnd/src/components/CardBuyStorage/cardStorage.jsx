@@ -46,7 +46,8 @@ const PurchaseStorage = ({userName, errorMessage, setErrorMessage}) => {
     const handleConfirmPurchase = async () => {
         setIsLoading(true);
         try {
-            const data = await api.createPaymentIntent(api.token);
+            const token = localStorage.getItem('token');
+            const data = await api.createPaymentIntent(token);
 
             setClientSecret(data.clientSecret);
             setShowCheckout(true);
