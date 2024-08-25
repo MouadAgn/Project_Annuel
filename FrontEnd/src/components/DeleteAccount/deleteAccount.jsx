@@ -14,7 +14,8 @@ export default function DeleteAccount() {
 
     const handleConfirm = () => {
 
-        api.deleteUserProfile(api.token)
+        const token = localStorage.getItem('token');
+        api.deleteUserProfile(token)
             .then(() => {
                 setErrorMessage('Votre compte a bien été supprimé');
                 navigate('/')

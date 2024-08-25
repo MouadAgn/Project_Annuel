@@ -49,13 +49,19 @@ function App() {
     return (
         <AuthProvider>
             <Routes>
-                <Route path="/" element={
+            <Route path="/" element={
                     <LoginRoute>
                         <Login />
                     </LoginRoute>
                 } />
                 <Route path="/logout" element={
                         <Logout />
+                } />
+                
+                <Route path="/home" element={
+                    <ProtectedRoute role="ROLE_USER">
+                        <Home />
+                    </ProtectedRoute>
                 } />
                 <Route path="/listFile" element={
                     <ProtectedRoute role="ROLE_USER">
@@ -77,15 +83,31 @@ function App() {
                         <Profile />
                     </ProtectedRoute>
                 } />
-                <Route path="*" element={<Navigate to="/profile" />} />
-                <Route path="/home" element={<Home />} />
-                <Route path="/listFile" element={<ListFile />} />
-                <Route path="/addFile" element={<AddFile />} />
-                <Route path="/folderCreation" element={<FolderCreation />} />
-                <Route path="/listFolder" element={<ListFolders />} />
-                <Route path="/DeleteFolder" element={<DeleteFolders />} />
-                <Route path="/addFileToFolder" element={<AddFileToFolder />} />
-                <Route path="/filesInFolder" element={<FilesInFolder />} />
+                <Route path="/folderCreation" element={
+                    <ProtectedRoute role="ROLE_USER">
+                        <FolderCreation />
+                    </ProtectedRoute>
+                } />
+                <Route path="/listFolder" element={
+                    <ProtectedRoute role="ROLE_USER">
+                        <ListFolders />
+                    </ProtectedRoute>
+                } />
+                <Route path="/DeleteFolder" element={
+                    <ProtectedRoute role="ROLE_USER">
+                        <DeleteFolders />
+                    </ProtectedRoute>
+                } />
+                <Route path="/addFileToFolder" element={
+                    <ProtectedRoute role="ROLE_USER">
+                        <AddFileToFolder />
+                    </ProtectedRoute>
+                } />
+                <Route path="/filesInFolder" element={
+                    <ProtectedRoute role="ROLE_USER">
+                        <FilesInFolder />
+                    </ProtectedRoute>
+                } />
             </Routes>
         </AuthProvider>
     )

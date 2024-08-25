@@ -36,7 +36,8 @@ export default function ModifyProfile({ userData, onUpdateSuccess, onCancel, set
             return;
         }
         try {
-            await api.updateUserProfile(api.token, modifiedFields);
+            const token = localStorage.getItem('token');
+            await api.updateUserProfile(token, modifiedFields);
             onUpdateSuccess();
         } catch (error) {
             setErrorMessage('Une erreur est survenue lors de la mise à jour du profil');
