@@ -1,62 +1,59 @@
-/* Main container for adding storage space */
-.storage-container {
-    margin-bottom: 20px;
+.delete-account-container {
+    margin-top: 20px;
 }
-  
-/* Button to add more storage space */
-.purchase-button {
+
+/* Button Delete */
+.delete-button {
     padding: 10px 20px;
-    background-color: #3498db;
+    background-color: #e74c3c;
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
     transition: background-color 0.3s ease;
 }
-  
-.purchase-button:hover {
-    background-color: #2980b9;
+
+.delete-button:hover {
+background-color: #c0392b;
 }
 
-/* CardStorage */
-.cardStorage-content {
-    background-color: white;
-    border-radius: 8px;
-    padding: 20px;
-    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
-    max-width: 400px;
-    height: 40%;
-    width: 100%;
-    margin-top: 2%;
-}
-  
-.cardStorage-content h2 {
-    margin-top: 0;
-}
-  
-/* Container for modal buttons */
-.modal-buttons {
+/* Confirm Delete */
+.confirmation-container {
     margin-top: 20px;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border: 1px solid #bdc3c7;
+    border-radius: 8px;
+}
+
+/* Confirm Message */
+.confirmation-message {
+    margin-bottom: 20px;
+    color: #34495e;
+}
+
+/* Confirm Buttons */
+.confirmation-buttons {
     display: flex;
     gap: 10px;
 }
-  
-/* Confirmation button */
+
+/* Confirm Button */
 .confirm-button {
     padding: 10px 20px;
-    background-color: #2c3e50;
+    background-color: #ae2727;
     color: white;
     border: none;
     border-radius: 4px;
     cursor: pointer;
     transition: background-color 0.3s ease;
 }
-  
+
 .confirm-button:hover {
-    background-color: #295176;
+    background-color: #229954;
 }
-  
-/* Cancel button */
+
+/* Annulation Button */
 .cancel-button {
     padding: 10px 20px;
     background-color: #bdc3c7;
@@ -66,12 +63,12 @@
     cursor: pointer;
     transition: background-color 0.3s ease;
 }
-  
+
 .cancel-button:hover {
     background-color: #95a5a6;
 }
-  
-/* Error message */
+
+/* Error Message */
 .error-message {
     margin-top: 10px;
     color: red;

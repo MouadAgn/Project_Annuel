@@ -66,6 +66,15 @@ class AdminController extends AbstractController
     #[Route('/api/admin/users', name: 'getUsers', methods: ['GET'])]
     public function getAllUsers(): Response
     {
+        /** @var User $user */
+        $user = $this->getUser();
+    
+        if (!$user) {
+            return $this->json(['status' => 'KO', 'message' => 'User not found or not authenticated'], status: JsonResponse::HTTP_FORBIDDEN);
+        } else if ($user->getRole() !== User::ROLE_ADMIN) {
+            return $this->json(['status' => 'KO', 'message' => 'User is not an admin'], status: JsonResponse::HTTP_FORBIDDEN);
+        }
+
         try {
             $criteria = new Criteria();
             $criteria->where(Criteria::expr()->eq('role', User::ROLE_USER));

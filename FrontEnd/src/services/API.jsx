@@ -24,9 +24,11 @@ class Api {
 
             if (response.status === 200) {
                 const data = await response.json();
-                return data.token;
+                return data;
+            } else if (response.status === 401) {
+                return false;
             } else {
-                throw new Error("Invalid credentials");
+                throw new Error("An error occured");
             }
         } catch (error) {
             throw error;
@@ -99,14 +101,12 @@ class Api {
                     password: password,
                 }),
             });
-            // console.log(response);
-            if (response.status === 200) {
+            if (response.status === 201) {
                 const data = await response.json();
-                return data.token;
+                return data;
             } else {
                 const errorData = await response.json();
-                // throw new Error(JSON.stringify(errorData.errors));
-                console.log(errorData);
+                throw new Error(JSON.stringify(errorData.errors));
             }
         } catch(error) {
             throw error;

@@ -13,28 +13,33 @@ export const AuthProvider = ({ children }) => {
     const navigate = useNavigate();
 
     useEffect(() => {
-      const token = localStorage.getItem('token');
-      if (token) {
+    const token = localStorage.getItem('token');
+    if (token) {
         try {
-          const decodedToken = jwtDecode(token);
-          setUser(decodedToken.roles[0]);
+            const decodedToken = jwtDecode(token);
+            setUser(decodedToken.roles[0]);
         } catch (error) {
-          localStorage.removeItem('token');
-          setUser(null);
-          navigate('/');
+            localStorage.removeItem('token');
+            setUser(null);
+            navigate('/');
         }
-      }
-      setLoading(false);
+    }
+    setLoading(false);
     }, []);
 
+    // Used to update user data in the context
+    const updateUser = (userData) => {
+        setUser(userData);
+    };
+
     if (loading) {
-      return <div>Chargement...</div>;
+        return <div>Chargement...</div>;
     }
 
     return (
-      <AuthContext.Provider value={{ user, setUser }}>
-        {children}
-      </AuthContext.Provider>
+        <AuthContext.Provider value={{ user, setUser, updateUser }}>
+            {children}
+        </AuthContext.Provider>
     );
 };
 
