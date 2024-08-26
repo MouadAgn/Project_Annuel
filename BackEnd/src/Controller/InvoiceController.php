@@ -251,7 +251,7 @@ class InvoiceController extends AbstractController
         return $this->file($pdfPath);
     }
 
-    #[Route("/api/user/invoices", name: 'user_invoices', methods: ['GET'])]
+    #[Route("/api/invoices", name: 'user_invoices', methods: ['GET'])]
     public function listUserInvoices(): JsonResponse
     {
         // Récupérer l'utilisateur actuellement connecté

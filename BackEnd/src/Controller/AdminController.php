@@ -2,6 +2,7 @@
 
 namespace App\Controller;
 
+use App\Entity\File;
 use App\Service\UserStorageService;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -27,6 +28,37 @@ class AdminController extends AbstractController
         $this->em = $em;
         $this->userStorageService = $userStorageService;
     }
+
+        /**
+     * Route for getting file types distribution
+     */
+    #[Route('/api/admin/filetypes', name: 'getFileTypesDistribution', methods: ['GET'])]
+    public function getFileTypesDistribution(): JsonResponse
+    {
+        try {
+            $fileRepository = $this->em->getRepository(File::class);
+
+            // Query to get the count of each file format
+            $query = $fileRepository->createQueryBuilder('f')
+                ->select('f.format, COUNT(f.id) as count')
+                ->groupBy('f.format')
+                ->getQuery();
+
+            $result = $query->getResult();
+
+            return $this->json($result);
+        } catch (\Exception $e) {
+            return new JsonResponse(['status' => 'KO', 'message' => 'Error retrieving file types distribution!'], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
+        }
+    }
+   
+    // [
+    //     {"format": "pdf", "count": 10},
+    //     {"format": "jpg", "count": 5},
+    //     {"format": "png", "count": 8},
+    //     {"format": "docx", "count": 3}
+    // ]
+    
 
     /**
     * Route for getting all users
@@ -137,5 +169,7 @@ class AdminController extends AbstractController
             return new JsonResponse(['status' => 'KO', 'message' => 'User not created!', 'message2' => $e->getMessage()], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
+
+    
 
 }

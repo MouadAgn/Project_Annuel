@@ -8,7 +8,7 @@ const InvoiceList = () => {
 
     useEffect(() => {
         // Remplace l'URL par celle de ton API
-        fetch('/api/user/invoices')
+        fetch('/api/invoices')
             .then(response => response.json())
             .then(data => setInvoices(data))
             .catch(error => console.error('Error fetching invoices:', error));

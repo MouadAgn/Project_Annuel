@@ -1,42 +1,85 @@
-import React, { useState, useEffect } from 'react';
-// import { useNavigate } from 'react-router-dom';
+// src/components/Dashboard.js
 
+import React, { useEffect, useState } from 'react';
+import { Pie } from 'react-chartjs-2';
+import axios from 'axios';
 
-import ResearchFilter from '@components/ResearchFilter/ResearchFilter.jsx'
-import Api from '@services/Api.jsx';
-
-
-export default function Dashboard() {
-
-    const [errorMessage, setErrorMessage] = useState('');
+const Dashboard = () => {
+    const [fileData, setFileData] = useState([]);
     const [users, setUsers] = useState([]);
-    // const [files, setFiles] = useState([]);
-
-    const api = new Api();
 
     useEffect(() => {
-        const fetchData = async () => {
-            try {
-                const userResponse = await api.getAllUsers(api.token);
-                setUsers(userResponse);
-        
-                /* const fileResponse = await api.getFiles();
-                setFiles(fileResponse); */
-            } catch (error) {
-                setErrorMessage('Error fetching data');
-                console.error(error);
-            }
-        };
-          fetchData();
+        // Appel à l'API pour récupérer les statistiques des fichiers
+        axios.get('/api/admin/filetypes')
+            .then(response => {
+                if (response.data.status === 'OK') {
+                    setFileData(response.data.data);
+                }
+            })
+            .catch(error => {
+                console.error('Erreur lors de la récupération des statistiques des fichiers!', error);
+            });
+
+        // Appel à l'API pour récupérer les utilisateurs
+        axios.get('/api/admin/users')
+            .then(response => {
+                setUsers(response.data);
+            })
+            .catch(error => {
+                console.error('Erreur lors de la récupération des utilisateurs!', error);
+            });
     }, []);
 
+    // Préparer les données pour le graphique
+    const pieData = {
+        labels: fileData.map(file => file.format),
+        datasets: [
+            {
+                data: fileData.map(file => file.count),
+                backgroundColor: [
+                    '#FF6384',
+                    '#36A2EB',
+                    '#FFCE56',
+                    '#4BC0C0',
+                    '#9966FF',
+                    '#FF9F40'
+                ],
+            },
+        ],
+    };
+
     return (
-        <>
-            <h1>Dashboard</h1>
-            <ResearchFilter />
-            {errorMessage && <p className="error">{errorMessage}</p>}
-            {users.length > 0 && <List users={users} dataType="users" />}
-            {/* {files.length > 0 && <List files={files} dataType="files" />} */}
-        </>
-    )
-}
+        <div>
+            <h2>Dashboard</h2>
+
+            <h3>File Types Distribution</h3>
+            <Pie data={pieData} />
+
+            <h3>List of Users</h3>
+            <table>
+                <thead>
+                    <tr>
+                        <th>ID</th>
+                        <th>Storage Capacity (GB)</th>
+                        <th>Storage Used (GB)</th>
+                        <th>Storage Usage (%)</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {users.map(user => (
+                        <tr key={user.id}>
+                            <td>{user.name}</td>
+                            <td>{user.firstName}</td>
+                            <td>{user.storageCapacity}</td>
+                            <td>{user.storageUsed}</td>
+                            <td>{user.storageUsagePercentage}%</td>
+                            <td>{user.createdDate}</td>
+                        </tr>
+                    ))}
+                </tbody>
+            </table>
+        </div>
+    );
+};
+
+export default Dashboard;
