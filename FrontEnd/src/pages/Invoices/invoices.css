@@ -1,51 +1,107 @@
-/* src/components/InvoiceList.css */
-
-.invoice-list-container {
+.invoices-page {
     padding: 20px;
-    max-width: 800px;
+    width: 100%;
     margin: 0 auto;
-    font-family: Arial, sans-serif;
+    background-color: #f5f7fa;
 }
 
-h1 {
-    text-align: center;
-    color: #333;
+.invoices-title {
+    font-size: 2em;
+    margin-bottom: 20px;
+    color: #2c3e50;
+}
+
+.error-message {
+    color: red;
+    font-weight: bold;
     margin-bottom: 20px;
 }
 
-.invoice-list {
-    list-style-type: none;
-    padding: 0;
+.invoices-container {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
 }
 
-.invoice-item {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    padding: 10px;
-    border-bottom: 1px solid #ddd;
+.invoice-card {
+    margin-bottom: 15px;
+    padding: 15px;
+    border: 1px solid #ddd;
+    border-radius: 5px;
+}
+
+.invoice-info {
+    font-size: 16px;
     margin-bottom: 10px;
-}
-
-.invoice-details {
-    flex: 1;
+    color: #34495e;
 }
 
 .download-button {
-    background-color: #007bff;
+    padding: 10px 20px;
+    background-color: #3498db;
     color: white;
     border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
+    border-radius: 4px;
     cursor: pointer;
-    font-size: 14px;
     transition: background-color 0.3s ease;
 }
 
 .download-button:hover {
-    background-color: #0056b3;
+    background-color: #2980b9;
+}
+.invoices-page {
+    padding: 20px;
+    background-color: #f5f7fa;
 }
 
-.download-button:focus {
-    outline: none;
+.invoices-title {
+    font-size: 2em;
+    margin-bottom: 20px;
+    color: #2c3e50;
 }
+
+.error-message {
+    color: red;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.invoices-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+}
+
+.invoice-card {
+    background-color: white;
+    padding: 20px;
+    border-radius: 8px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    width: 300px;
+}
+
+.invoice-info {
+    font-size: 16px;
+    margin-bottom: 10px;
+    color: #34495e;
+}
+
+.invoice-pdf {
+    margin-bottom: 10px;
+}
+
+.download-button {
+    padding: 10px 20px;
+    background-color: #3498db;
+    color: white;
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.download-button:hover {
+    background-color: #2980b9;
+}
+
