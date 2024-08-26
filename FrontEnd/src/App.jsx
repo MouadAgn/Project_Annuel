@@ -1,4 +1,6 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
+import { useLocation } from 'react-router-dom'
+
 import Dashboard from '@pages/Dashboard'
 import Profile from '@pages/profile/profile'
 import Logout from '@components/logout'
@@ -19,22 +21,28 @@ import React, { useContext } from 'react';
 import './App.css'
 
 // Route to redirect
-const ProtectedRoute = ({ children, role }) => {
+const ProtectedRoute = ({ element: Element, roles, requireActivation = true }) => {
     const { user } = useContext(AuthContext);
-    // console.log(user);
-
-    // If role is an array, check if user's role is included
-    if (Array.isArray(role) && !role.includes(user)) {
-        return <Navigate to="/profile" />;
+    const location = useLocation();
+  
+    // User not logged in
+    if (!user) {
+      return <Navigate to="/" state={{ from: location }} replace />;
     }
-
-    // If role is a string, check if it matches user's role
-    if (typeof role === 'string' && user !== role) {
-        return <Navigate to="/profile" />;
+  
+    // User not activated
+    if (requireActivation && !user.activated) {
+      return <Navigate to="/profile" replace />;
     }
-    
-    return children;
-}
+  
+    // Role not authorized
+    if (roles && !roles.includes(user.roles)) {
+      return <Navigate to={user.roles === "ROLE_ADMIN" ? "/dashboard" : "/home"} replace />;
+    }
+  
+    // Everything is fine, we can shot it
+    return <Element />;
+  };
 
 // Route to redirect to profile if user is already logged in
 const LoginRoute = ({ children }) => {
@@ -54,64 +62,30 @@ function App() {
             <Route path="/" element={
                     <LoginRoute>
                         <Login />
-                    </LoginRoute>
-                } />
-                <Route path="/logout" element={
-                        <Logout />
-                } />
-                <Route path="/home" element={
-                    <ProtectedRoute role="ROLE_USER">
-                        <Home />
-                    </ProtectedRoute>
-                } />
-                <Route path="/listFile" element={
-                    <ProtectedRoute role="ROLE_USER">
-                        <ListFile />
-                    </ProtectedRoute>
-                } />
-                <Route path="/addFile" element={
-                    <ProtectedRoute role="ROLE_USER">
-                        <AddFile />
-                    </ProtectedRoute>
-                } />
-                <Route path="/dashboard" element={
-                    <ProtectedRoute role="ROLE_ADMIN">
-                        <Dashboard />
-                    </ProtectedRoute>
-                } />
+                    </LoginRoute>} />
+                <Route path="/logout" element={<Logout />} />
+                <Route path="/listFile" element={<ProtectedRoute element={ListFile} roles={["ROLE_USER"]} />} />
+                <Route path="/addFile" element={<ProtectedRoute element={AddFile} roles={["ROLE_USER"]} />} />
+                <Route path="/dashboard" element={<ProtectedRoute element={Dashboard} roles={["ROLE_ADMIN"]} />} />
+                <Route path="/home" element={<ProtectedRoute element={Home} roles={["ROLE_USER", "ROLE_ADMIN"]} />} />
                 <Route path="/profile" element={
-                    <ProtectedRoute role={["ROLE_USER", "ROLE_ADMIN"]} >
-                        <div className="principal-container">
-                            <SideBar />
-                            <Profile />
-                        </div>
-                    </ProtectedRoute>
+                <ProtectedRoute 
+                    element={() => (
+                    <div className="principal-container">
+                        <SideBar />
+                        <Profile />
+                    </div>
+                    )} 
+                    roles={["ROLE_USER", "ROLE_ADMIN"]}
+                    requireActivation={false}
+                />
                 } />
-                <Route path="/folderCreation" element={
-                    <ProtectedRoute role="ROLE_USER">
-                        <FolderCreation />
-                    </ProtectedRoute>
-                } />
-                <Route path="/listFolder" element={
-                    <ProtectedRoute role="ROLE_USER">
-                        <ListFolders />
-                    </ProtectedRoute>
-                } />
-                <Route path="/DeleteFolder" element={
-                    <ProtectedRoute role="ROLE_USER">
-                        <DeleteFolders />
-                    </ProtectedRoute>
-                } />
-                <Route path="/addFileToFolder" element={
-                    <ProtectedRoute role="ROLE_USER">
-                        <AddFileToFolder />
-                    </ProtectedRoute>
-                } />
-                <Route path="/filesInFolder" element={
-                    <ProtectedRoute role="ROLE_USER">
-                        <FilesInFolder />
-                    </ProtectedRoute>
-                } />
+                <Route path="/folderCreation" element={<ProtectedRoute element={FolderCreation} roles={["ROLE_USER"]} />} />
+                <Route path="/listFolder" element={<ProtectedRoute element={ListFolders} roles={["ROLE_USER"]} />} />
+                <Route path="/DeleteFolder" element={<ProtectedRoute element={DeleteFolders} roles={["ROLE_USER"]} />} />
+                <Route path="/addFileToFolder" element={<ProtectedRoute element={AddFileToFolder} roles={["ROLE_USER"]} />} />
+                <Route path="/filesInFolder" element={<ProtectedRoute element={FilesInFolder} roles={["ROLE_USER"]} />} />
+                <Route path="*" element={<Navigate to="/" />} />
             </Routes>
         </AuthProvider>
     )

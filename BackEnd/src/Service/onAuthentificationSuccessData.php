@@ -2,29 +2,24 @@
 
 namespace App\EventListener;
 
-use Lexik\Bundle\JWTAuthenticationBundle\Event\AuthenticationSuccessEvent;
-use Symfony\Component\EventDispatcher\EventSubscriberInterface;
+use Lexik\Bundle\JWTAuthenticationBundle\Event\JWTCreatedEvent;
 use App\Entity\User;
 
-class AuthenticationSuccessListener implements EventSubscriberInterface
+class JWTCreatedListener
 {
-    public static function getSubscribedEvents()
+    public function onJWTCreated(JWTCreatedEvent $event)
     {
-        return [
-            AuthenticationSuccessEvent::class => 'onAuthenticationSuccessResponse',
-        ];
-    }
-
-    public function onAuthenticationSuccessResponse(AuthenticationSuccessEvent $event)
-    {
-        $data = $event->getData();
+        $payload = $event->getData();
         $user = $event->getUser();
 
         if ($user instanceof User) {
-            // Assuming the user has an 'isActivated' property
-            $data['activated'] = $user->isActivated();
+            // Ajout de l'information 'activated' au payload
+            $payload['activated'] = $user->isActivated();
+            
+            // Si vous voulez aussi ajouter les rôles explicitement
+            $payload['roles'] = $user->getRoles();
         }
 
-        $event->setData($data);
+        $event->setData($payload);
     }
 }

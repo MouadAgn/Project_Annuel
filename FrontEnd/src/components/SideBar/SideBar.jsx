@@ -1,5 +1,5 @@
 import React from 'react';
-import { Home as HomeIcon, Search, UserRoundPen, LogOut } from 'lucide-react';
+import { Home as HomeIcon, UserRoundPen, LogOut } from 'lucide-react';
 import './SideBar.css';
 
 const SideBar = () => {
