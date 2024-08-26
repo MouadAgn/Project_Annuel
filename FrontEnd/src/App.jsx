@@ -1,7 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import Dashboard from '@pages/Dashboard'
-// import AddFile from '@pages/addFile'
-// import ListFile from '@pages/listFile'
 import Profile from '@pages/profile/profile'
 import Logout from '@components/logout'
 import Login from '@pages/LoginRegister'
@@ -13,24 +11,28 @@ import DeleteFolders from '@pages/DeleteFolder'
 import AddFileToFolder from '@pages/AddFileToFolder/AddFileToFolder'
 import FilesInFolder from '@pages/FolderFileList/FolderFileList'
 import Home from '@pages/Home/Home'
+import SideBar from '@components/SideBar/SideBar'
+
 import AuthContext, { AuthProvider } from '@services/Security';
 import React, { useContext } from 'react';
+
+import './App.css'
 
 // Route to redirect
 const ProtectedRoute = ({ children, role }) => {
     const { user } = useContext(AuthContext);
-    console.log(user);
+    // console.log(user);
 
-    // If user is not logged in, redirect to login page
-    if (!user) {
-        return <Navigate to="/" />;
-    }
-
-    // If user is not authorized, redirect to profile page
-    if (role && user !== role) {
+    // If role is an array, check if user's role is included
+    if (Array.isArray(role) && !role.includes(user)) {
         return <Navigate to="/profile" />;
     }
 
+    // If role is a string, check if it matches user's role
+    if (typeof role === 'string' && user !== role) {
+        return <Navigate to="/profile" />;
+    }
+    
     return children;
 }
 
@@ -57,7 +59,6 @@ function App() {
                 <Route path="/logout" element={
                         <Logout />
                 } />
-                
                 <Route path="/home" element={
                     <ProtectedRoute role="ROLE_USER">
                         <Home />
@@ -79,8 +80,11 @@ function App() {
                     </ProtectedRoute>
                 } />
                 <Route path="/profile" element={
-                    <ProtectedRoute role="ROLE_USER">
-                        <Profile />
+                    <ProtectedRoute role={["ROLE_USER", "ROLE_ADMIN"]} >
+                        <div className="principal-container">
+                            <SideBar />
+                            <Profile />
+                        </div>
                     </ProtectedRoute>
                 } />
                 <Route path="/folderCreation" element={

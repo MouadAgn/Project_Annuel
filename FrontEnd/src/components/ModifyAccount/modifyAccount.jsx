@@ -13,6 +13,8 @@ export default function ModifyProfile({ userData, onUpdateSuccess, onCancel, set
         totalStorageUsed: userData.totalStorageUsed,
     });
 
+    // ADD PASSWORD FIELDS --------------------------------
+
     const [modifiedFields, setModifiedFields] = useState({});
 
     const api = new Api();
@@ -46,8 +48,9 @@ export default function ModifyProfile({ userData, onUpdateSuccess, onCancel, set
     };
 
     return (
-        <form className="formModify" onSubmit={handleFormSubmit}>
-            <div className="profile-container">
+        <form className="form-modify-account" onSubmit={handleFormSubmit}>
+            <h1>Modifier le Compte</h1>
+            <div className="form-container">
                 <label htmlFor="email">Email :</label>
                 <input
                     type="email"
@@ -56,7 +59,7 @@ export default function ModifyProfile({ userData, onUpdateSuccess, onCancel, set
                     value={formData.mail}
                     onChange={handleInputChange}
                 />
-                <label htmlFor="name">Nom : </label>
+                <label htmlFor="name">Nom :</label>
                 <input
                     type="text"
                     name="name"
@@ -72,7 +75,7 @@ export default function ModifyProfile({ userData, onUpdateSuccess, onCancel, set
                     value={formData.firstName}
                     onChange={handleInputChange}
                 />
-                <label htmlFor='address'>Adresse : </label>
+                <label htmlFor="address">Adresse :</label>
                 <input
                     type="text"
                     name="address"
@@ -80,7 +83,7 @@ export default function ModifyProfile({ userData, onUpdateSuccess, onCancel, set
                     value={formData.address}
                     onChange={handleInputChange}
                 />
-                <label htmlFor='totalStorageCapacity'>Go Total :</label>
+                <label htmlFor="totalStorageCapacity">Go Total :</label>
                 <input
                     type="number"
                     name="totalStorageCapacity"
@@ -89,7 +92,7 @@ export default function ModifyProfile({ userData, onUpdateSuccess, onCancel, set
                     onChange={handleInputChange}
                     disabled
                 />
-                <label htmlFor='totalStorageUsed'>Go utilisé :</label>
+                <label htmlFor="totalStorageUsed">Go utilisé :</label>
                 <input
                     type="number"
                     name="totalStorageUsed"
@@ -98,11 +101,36 @@ export default function ModifyProfile({ userData, onUpdateSuccess, onCancel, set
                     onChange={handleInputChange}
                     disabled
                 />
+                <label htmlFor="currentPassword">Mot de passe actuel :</label>
+                <input
+                    type="password"
+                    name="currentPassword"
+                    id="currentPassword"
+                    value={formData.currentPassword}
+                    onChange={handleInputChange}
+                />
+                <label htmlFor="newPassword">Nouveau mot de passe :</label>
+                <input
+                    type="password"
+                    name="newPassword"
+                    id="newPassword"
+                    value={formData.newPassword}
+                    onChange={handleInputChange}
+                />
+                <label htmlFor="confirmPassword">Confirmer le nouveau mot de passe :</label>
+                <input
+                    type="password"
+                    name="confirmPassword"
+                    id="confirmPassword"
+                    value={formData.confirmPassword}
+                    onChange={handleInputChange}
+                />
             </div>
-            <div>
-                <button type="submit">Enregistrer</button>
-                <button type="button" onClick={onCancel}>Annuler</button>
+            <div className="form-actions">
+                <button type="submit" className="save-button">Enregistrer</button>
+                <button type="button" className="cancel-button" onClick={onCancel}>Annuler</button>
             </div>
         </form>
+
     );
 }

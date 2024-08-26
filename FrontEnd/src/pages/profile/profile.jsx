@@ -10,7 +10,6 @@ export default function Profile() {
     const [errorMessage, setErrorMessage] = useState('');
     const [data, setData] = useState(null);
     const [isEditing, setIsEditing] = useState(false);
-    // const [showDeleteAccount, setShowDeleteAccount] = useState(false);
 
     const api = new Api();
 
@@ -20,63 +19,60 @@ export default function Profile() {
 
     const fetchData = async () => {
         try {
-            // Retrieve token from localStorage
             const token = localStorage.getItem('token');
 
             if (!token) {
                 throw new Error('Missing token in localStorage');
             }
-
             const userData = await api.getUserProfile(token);
             setData(userData);
             
         } catch (error) {
             setErrorMessage('Erreur lors de la récupération des données');
-            // console.error(error);
         }
     };
 
-    // Gére l'affichage du formulaire de modification du profil
+    // Show the form to update the profile
     const handleEditClick = () => {
         setIsEditing(true);
     };
 
-    // Gére l'affichage du formulaire de mise à jour du compte
+    // Update the profile
     const handleUpdateSuccess = () => {
         setIsEditing(false);
         fetchData();
         setErrorMessage('Profil mis à jour !');
     };
 
-    // Annule la modification du profil
+    // Cancel the update
     const handleCancelEdit = () => {
         setIsEditing(false);
     };
 
     return (
-        <>
-            <h1>Profile</h1>
-            {errorMessage && <p className="error">{errorMessage}</p>}
-            {data && data.user && (
-                <div className="profile-container">
-                    {!isEditing ? (
-                        <>
-                            <p>Email : {data.user.mail}</p>
-                            <p>Nom : {data.user.name}</p>
-                            <p>Prénom : {data.user.firstName}</p>
-                            <p>Adresse : {data.user.address}</p>
-                            <p>Go total : {data.totalStorageCapacity}</p>
-                            <p>Go utilisé : {data.totalStorageUsed}</p>
-                            
-                            <CardStorage 
-                                setErrorMessage={setErrorMessage}
-                                userName={data.user.name + ' ' + data.user.firstName}
-                                // totalStorageCapacity={data.totalStorageCapacity}
-                                // totalStorageUsed={data.totalStorageUsed}
-                            />
-                            <button onClick={handleEditClick}>Modifier</button>
-                            <DeleteAccount />
-                        </>
+            <div className="profile-page">
+                <h1 className="profile-title">Profile</h1>
+                {errorMessage && <p className="error-message">{errorMessage}</p>}
+                {data && data.user && (
+                    <div className="profile-container">
+                        {!isEditing ? (
+                            <>
+                                <p className="profile-info"><strong>Email :</strong> {data.user.mail}</p>
+                                <p className="profile-info"><strong>Nom :</strong> {data.user.name}</p>
+                                <p className="profile-info"><strong>Prénom :</strong> {data.user.firstName}</p>
+                                <p className="profile-info"><strong>Adresse :</strong> {data.user.address}</p>
+                                <p className="profile-info"><strong>Go total :</strong> {data.totalStorageCapacity}</p>
+                                <p className="profile-info"><strong>Go utilisé :</strong> {data.totalStorageUsed}</p>
+                                
+                                <div className="storage-card">
+                                    <CardStorage 
+                                    setErrorMessage={setErrorMessage}
+                                    userName={data.user.name + ' ' + data.user.firstName}
+                                    />
+                                </div>
+                                <button className="edit-button" onClick={handleEditClick}>Modifier</button>
+                                    <DeleteAccount />
+                            </>
                     ) : (
                         <ModifyProfile 
                             userData={data}
@@ -87,6 +83,6 @@ export default function Profile() {
                     )}
                 </div>
             )}
-        </>
+        </div>
     );
 }

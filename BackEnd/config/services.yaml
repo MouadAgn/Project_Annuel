@@ -31,6 +31,10 @@ services:
         autowire: true
         tags: ['controller.service_arguments']
 
+    App\EventListener\AuthenticationSuccessListener:
+        tags:
+            - { name: kernel.event_subscriber }
+
         
 # Déclaration du service EntityManagerInterface
     Doctrine\ORM\EntityManagerInterface:

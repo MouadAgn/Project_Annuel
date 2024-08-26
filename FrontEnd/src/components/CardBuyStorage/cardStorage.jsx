@@ -1,9 +1,11 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { Elements } from '@stripe/react-stripe-js';
 import { loadStripe } from '@stripe/stripe-js';
-import CheckoutForm from '@components/checkout';
+import CheckoutForm from '@components/Checkout/Checkout';
 
 import Api from '@services/Api';
+
+import './cardStorage.css';
 
 const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 
@@ -13,9 +15,9 @@ const PurchaseStorage = ({userName, errorMessage, setErrorMessage}) => {
     const [showCheckout, setShowCheckout] = useState(false);
     const [clientSecret, setClientSecret] = useState('');
 
-    // console.log(userName);
     const api = new Api();
 
+    // Stripe appearance
     const appearance = {
         theme: 'night',
         variables: {
@@ -39,17 +41,18 @@ const PurchaseStorage = ({userName, errorMessage, setErrorMessage}) => {
         }
       };
 
+    // Show modal after clicking on purchase button
     const handlePurchaseClick = () => {
         setShowModal(true);
     };
 
+    // Call API to create payment intent
     const handleConfirmPurchase = async () => {
         setIsLoading(true);
         try {
             const token = localStorage.getItem('token');
             const data = await api.createPaymentIntent(token);
            
-
             setClientSecret(data.clientSecret);
             setShowCheckout(true);
         } catch (error) {
@@ -59,47 +62,53 @@ const PurchaseStorage = ({userName, errorMessage, setErrorMessage}) => {
         }
     };
 
+    // Hide modal and checkout form
     const HidePaiement = () => {
         setShowModal(false);
         setShowCheckout(false);
     };
 
     return (
-        <div>
-        <button onClick={handlePurchaseClick}>
-            Ajouter plus d'espace à votre Stockage
-        </button>
-
-        {showModal && (
-            <div className="modal">
-            <h2>Ajouter 20 Go pour 20 euros !</h2>
-            <p>Paiement unique</p>
-            <p>Disponible de suite</p>
-            <p>Voulez-vous vraiment acheter 20 Go pour 20€ ?</p>
-            <button onClick={handleConfirmPurchase} disabled={isLoading}>
-                {isLoading ? 'Chargement...' : 'Confirmer'}
+        <div className="storage-container">
+            <button className="purchase-button" onClick={handlePurchaseClick}>
+                Ajouter plus d'espace à votre Stockage
             </button>
-            <button onClick={() => { setShowCheckout(false); setShowModal(false); }} disabled={isLoading}>
-                Annuler
-            </button>
-            </div>
-        )}
-
-        {showCheckout && clientSecret && (
-            <Elements stripe={stripePromise} options={{ clientSecret, appearance}}>
-                <CheckoutForm 
-                    // clientSecret={clientSecret}
-                    hidePaiement={HidePaiement}
-                    setShowModal={setShowModal}
-                    setShowCheckout={setShowCheckout}
-                    userName={userName}
-                    isLoading={isLoading}
-                    setErrorMessage={setErrorMessage}
-                />
-            </Elements>
-        )}
-        {errorMessage && <p>{errorMessage}</p>}
-        </div>
+        
+            {showModal && (
+                <div className="cardStorage">
+                    <div className="cardStorage-content">
+                        <h2>Ajouter 20 Go pour 20 euros !</h2>
+                        <p>Paiement unique</p>
+                        <p>Disponible de suite</p>
+                        <p>Voulez-vous vraiment acheter 20 Go pour 20€ ?</p>
+                        <div className="modal-buttons">
+                            <button className="confirm-button" onClick={() => { handleConfirmPurchase(); setShowModal(false); }} disabled={isLoading}>
+                                {isLoading ? 'Chargement...' : 'Confirmer'}
+                            </button>
+                            <button className="cancel-button" onClick={() => { setShowCheckout(false); setShowModal(false); }} disabled={isLoading}>
+                                Annuler
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            )}
+        
+            {showCheckout && clientSecret && (
+                <div className="checkout-container">
+                    <Elements stripe={stripePromise} options={{ clientSecret, appearance }}>
+                        <CheckoutForm 
+                            hidePaiement={HidePaiement}
+                            setShowModal={setShowModal}
+                            setShowCheckout={setShowCheckout}
+                            userName={userName}
+                            isLoading={isLoading}
+                            setErrorMessage={setErrorMessage}
+                        />
+                    </Elements>
+                </div>
+            )}
+            {errorMessage && <p className="error-message">{errorMessage}</p>}
+        </div>    
     );
 };
 
