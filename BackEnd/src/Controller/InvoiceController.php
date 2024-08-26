@@ -153,24 +153,32 @@ class InvoiceController extends AbstractController
 
         $pdf->writeHTML($htmlContent);
 
-        // Ensure the invoices directory exists
-        $invoicesDir = $this->getParameter('kernel.project_dir') . '/invoices';
-        if (!is_dir($invoicesDir)) {
-            mkdir($invoicesDir, 0775, true);
-        }
+            // Define the invoices directory within the public directory
+    $invoicesDir = $this->getParameter('kernel.project_dir') . '/public/invoices';
 
-        $pdfFilePath = $invoicesDir . '/invoice_' . uniqid() . '.pdf';
-        $pdf->Output($pdfFilePath, 'F');
+    // Ensure the invoices directory exists
+    if (!is_dir($invoicesDir)) {
+        mkdir($invoicesDir, 0775, true);
+    }
 
-        $invoice->setPdf($pdfFilePath);
+    // Generate the PDF file name and path
+    $pdfFileName = 'invoice_' . uniqid() . '.pdf';
+    $pdfFilePath = $invoicesDir . '/' . $pdfFileName;
 
-        $errors = $validator->validate($invoice);
-        if (count($errors) > 0) {
-            return new JsonResponse(['error' => (string) $errors], 400);
-        }
+    // Output the PDF to the file path
+    $pdf->Output($pdfFilePath, 'F');
 
-        $this->entityManager->persist($invoice);
-        $this->entityManager->flush();
+    // Store the relative path in the database
+    $invoice->setPdf('/invoices/' . $pdfFileName);
+
+    // Validate and save the invoice entity
+    $errors = $validator->validate($invoice);
+    if (count($errors) > 0) {
+        return new JsonResponse(['error' => (string) $errors], 400);
+    }
+
+    $this->entityManager->persist($invoice);
+    $this->entityManager->flush();
 
         return new JsonResponse(['message' => 'Invoice created successfully', 'invoice_id' => $invoice->getId()], 201);
     }
@@ -239,10 +247,10 @@ class InvoiceController extends AbstractController
     {
         $invoice = $this->invoiceRepository->find($id);
         if (!$invoice) {
-        return new JsonResponse(['error' => 'Invoice not found'], 404);
-    }
+            return new JsonResponse(['error' => 'Invoice not found'], 404);
+        }
 
-        $pdfPath = $invoice->getPdf();
+        $pdfPath = $this->getParameter('kernel.project_dir') . '/public' . $invoice->getPdf();
 
         if (!file_exists($pdfPath)) {
             return new JsonResponse(['error' => 'File not found'], 404);
@@ -251,41 +259,34 @@ class InvoiceController extends AbstractController
         return $this->file($pdfPath);
     }
 
+
     #[Route("/api/user/invoices", name: 'user_invoices', methods: ['GET'])]
     public function listUserInvoices(): JsonResponse
     {
         // Récupérer l'utilisateur actuellement connecté
+        /**
+        * @var User $user
+        */
         $user = $this->getUser();
-    
-        // Vérifier si l'utilisateur est authentifié
+
         if (!$user) {
-            return new JsonResponse(['error' => 'User not authenticated'], 401);
+            return new JsonResponse(['status' => 'KO', 'message' => 'User not found or not authenticated'], JsonResponse::HTTP_NOT_FOUND);
         }
-    
+
         // Vérifiez que l'utilisateur est bien une instance de votre classe User
         if (!$user instanceof User) {
             return new JsonResponse(['error' => 'Invalid user type'], 500);
         }
-    
+
         // Récupérer les factures de l'utilisateur
         $invoices = $this->invoiceRepository->findBy(['user' => $user]);
-        $invoiceData = [];
-    
+        $pdfUrls = [];
+
         foreach ($invoices as $invoice) {
-            $invoiceData[] = [
-                'id' => $invoice->getId(),
-                'purchasedDate' => $invoice->getPurchasedDate()->format('Y-m-d H:i:s'),
-                'pdf' => $invoice->getPdf(),
-                'user' => [
-                    'id' => $invoice->getUser()->getId(),
-                    'name' => $invoice->getUser()->getName(),
-                    'username' => $invoice->getUser()->getUsername(),
-                    'email' => $invoice->getUser()->getMail(),
-                ],
-            ];
+            $pdfUrls[] = $invoice->getPdf();
         }
-    
-        return new JsonResponse($invoiceData, 200);
+
+        return new JsonResponse($pdfUrls, 200);
     }
 
 }

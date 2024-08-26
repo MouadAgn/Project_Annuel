@@ -12,6 +12,8 @@ import AddFileToFolder from '@pages/AddFileToFolder/AddFileToFolder'
 import FilesInFolder from '@pages/FolderFileList/FolderFileList'
 import Home from '@pages/Home/Home'
 import SideBar from '@components/SideBar/SideBar'
+import InvoicesPage from '@pages/Invoices/invoices'; 
+
 
 import AuthContext, { AuthProvider } from '@services/Security';
 import React, { useContext } from 'react';
@@ -110,6 +112,14 @@ function App() {
                 <Route path="/filesInFolder" element={
                     <ProtectedRoute role="ROLE_USER">
                         <FilesInFolder />
+                    </ProtectedRoute>
+                } />
+                <Route path="/invoices" element={
+                    <ProtectedRoute role={["ROLE_USER", "ROLE_ADMIN"]}>
+                        <div className="principal-container">
+                            <SideBar />
+                            <InvoicesPage />
+                        </div>
                     </ProtectedRoute>
                 } />
             </Routes>
