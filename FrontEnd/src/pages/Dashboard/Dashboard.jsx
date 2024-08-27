@@ -12,6 +12,7 @@ export default function Dashboard() {
     const [users, setUsers] = useState([]);
     const [totalStorageUsed, setTotalStorageUsed] = useState(0);
     const [totalStorageCapacity, setTotalStorageCapacity] = useState(0);
+    const [files, setFiles] = useState([]);
 
     const api = new Api();
 
@@ -22,11 +23,23 @@ export default function Dashboard() {
                 const userResponse = await api.getAllUsers(token);
                 setUsers(userResponse);
 
+                // Calcul du stockage total utilisé et disponible
                 const totalUsed = userResponse.reduce((sum, user) => sum + user.storageUsed, 0);
                 const totalCapacity = userResponse.reduce((sum, user) => sum + user.storageCapacity, 0);
 
                 setTotalStorageUsed(totalUsed);
                 setTotalStorageCapacity(totalCapacity);
+
+                // Récupération de tous les fichiers
+                const allFiles = userResponse.flatMap(user => 
+                    user.files.map(file => ({
+                        ...file,
+                        userName: user.name,
+                        userFirstName: user.firstName
+                    }))
+                );
+                setFiles(allFiles);
+
             } catch (error) {
                 setErrorMessage('Error fetching data');
                 console.error(error);
@@ -46,6 +59,9 @@ export default function Dashboard() {
             },
         ],
     };
+    const roundToTwoDecimals = (num) => {
+        return Math.round(num * 100) / 100;
+    }
 
     return (
         <div className="dashboard-app">
@@ -91,6 +107,36 @@ export default function Dashboard() {
                             </table>
                         ) : (
                             <p>Aucun client trouvé.</p>
+                        )}
+                    </div>
+
+                    <div className="files-table-container">
+                        <h2>Fichiers</h2>
+                        {files.length > 0 ? (
+                            <table className="files-table">
+                                <thead>
+                                    <tr>
+                                        <th>Nom du Fichier</th>
+                                        <th>Format</th>
+                                        <th>Poids (GB)</th>
+                                        <th>Utilisateur</th>
+                                        <th>Date d'Upload</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {files.map(file => (
+                                        <tr key={file.id}>
+                                            <td>{file.name}</td>
+                                            <td>{file.format}</td>
+                                            <td>{(roundToTwoDecimals(file.weight/1000))} GB</td>
+                                            <td>{file.userFirstName} {file.userName}</td>
+                                            <td>{file.uploadDate}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        ) : (
+                            <p>Aucun fichier trouvé.</p>
                         )}
                     </div>
                 </div>
