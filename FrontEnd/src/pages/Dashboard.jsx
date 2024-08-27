@@ -2,7 +2,8 @@ import React, { useState, useEffect } from 'react';
 // import { useNavigate } from 'react-router-dom';
 
 
-import Api from '@services/Api.jsx';
+import ResearchFilter from '@components/ResearchFilter/ResearchFilter.jsx'
+import Api from '@services/API.jsx';
 
 
 export default function Dashboard() {
@@ -16,8 +17,10 @@ export default function Dashboard() {
     useEffect(() => {
         const fetchData = async () => {
             try {
-                const userResponse = await api.getAllUsers(api.token);
+                const token = localStorage.getItem('token');
+                const userResponse = await api.getAllUsers(token);
                 setUsers(userResponse);
+                console.log(userResponse);
         
                 /* const fileResponse = await api.getFiles();
                 setFiles(fileResponse); */
@@ -33,7 +36,7 @@ export default function Dashboard() {
         <>
             <h1>Dashboard</h1>
             {errorMessage && <p className="error">{errorMessage}</p>}
-            {users.length > 0 && <List users={users} dataType="users" />}
+            {/* {users.length > 0 && <List users={users} dataType="users" />} */}
             {/* {files.length > 0 && <List files={files} dataType="files" />} */}
         </>
     )
