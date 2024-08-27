@@ -1,20 +1,81 @@
-.formModify {
-    display: flex;
-    flex-direction: column;
-    justify-content: center;
-    align-items: center;
-    height: 100vh;
+/* General style for the account modification form */
+.form-modify-account {
+    max-width: 600px;
+    margin: 20px auto;
+    padding: 20px;
+    background-color: #ffffff;
+    border: 1px solid #2c3e50;
+    border-radius: 8px;
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
 }
-
-/* .profile-container {
+  
+/* Form title */
+.form-modify-account h1 {
+    margin-top: 0;
+    font-size: 1.5em;
+    color: #2c3e50;
+}
+  
+/* Container for form fields */
+.form-container {
     display: flex;
     flex-direction: column;
-    gap: 10px;
-} */
- 
-.profile-container label {
+    gap: 15px;
+}
+  
+/* Style for labels */
+.form-container label {
+    font-weight: bold;
+    color: #2c3e50;
+}
+  
+/* Style for input fields */
+.form-container input {
+    padding: 5px;
+    font-size: 16px;
+    border: 1px solid #bdc3c7;
+    border-radius: 4px;
+    outline: none;
+    transition: border-color 0.3s ease;
+}
+  
+/* Style change when the input field is active */
+.form-container input:focus {
+    border-color: #3498db;
+    box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.2);
+}
+  
+/* Container for buttons */
+.form-actions {
+    margin-top: 20px;
     display: flex;
-    flex-direction: column;
-    align-items: flex-start;
     gap: 10px;
+}
+  
+/* Save button */
+.save-button {
+    padding: 10px 20px;
+    background-color: #2c3e50;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+  
+.save-button:hover {
+    background-color: #229954;
+}
+  
+/* Cancel button */
+.cancel-button {
+    padding: 10px 20px;
+    background-color: #bdc3c7;
+    color: #2c3e50;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+  
+.cancel-button:hover {
+    background-color: #95a5a6;
 }

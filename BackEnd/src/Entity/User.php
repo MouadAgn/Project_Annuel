@@ -74,6 +74,12 @@ class User implements PasswordAuthenticatedUserInterface, UserInterface
     #[ORM\OneToMany(targetEntity: File::class, mappedBy: 'user', cascade: ["remove"], orphanRemoval: true)]
     private Collection $files;
 
+    #[ORM\Column(length: 255, nullable: true)]
+    private ?string $token = null;
+
+    #[ORM\Column(type: 'boolean', options: ['default' => false])]
+    private ?bool $activated = false;
+
     public function __construct()
     {
         $this->invoices = new ArrayCollection();
@@ -309,5 +315,29 @@ class User implements PasswordAuthenticatedUserInterface, UserInterface
     public function getUserIdentifier(): string
     {
         return $this->mail;
+    }
+
+    public function getToken(): ?string
+    {
+        return $this->token;
+    }
+
+    public function setToken(?string $token): static
+    {
+        $this->token = $token;
+
+        return $this;
+    }
+
+    public function isActivated(): ?bool
+    {
+        return $this->activated;
+    }
+
+    public function setActivated(bool $activated): static
+    {
+        $this->activated = $activated;
+
+        return $this;
     }
 }

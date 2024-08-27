@@ -1,0 +1,73 @@
+.delete-account-container {
+    margin-top: 20px;
+}
+
+/* Button Delete */
+.delete-button {
+    padding: 10px 20px;
+    background-color: #e74c3c;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.delete-button:hover {
+background-color: #c0392b;
+}
+
+/* Confirm Delete */
+.confirmation-container {
+    margin-top: 20px;
+    padding: 20px;
+    background-color: #f8f9fa;
+    border: 1px solid #bdc3c7;
+    border-radius: 8px;
+}
+
+/* Confirm Message */
+.confirmation-message {
+    margin-bottom: 20px;
+    color: #34495e;
+}
+
+/* Confirm Buttons */
+.confirmation-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+/* Confirm Button */
+.confirm-button {
+    padding: 10px 20px;
+    background-color: #ae2727;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.confirm-button:hover {
+    background-color: #229954;
+}
+
+/* Annulation Button */
+.cancel-button {
+    padding: 10px 20px;
+    background-color: #bdc3c7;
+    color: #2c3e50;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.cancel-button:hover {
+    background-color: #95a5a6;
+}
+
+/* Error Message */
+.error-message {
+    margin-top: 10px;
+    color: red;
+    font-weight: bold;
+}
