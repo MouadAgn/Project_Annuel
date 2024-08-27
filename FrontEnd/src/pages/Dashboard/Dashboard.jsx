@@ -13,6 +13,7 @@ export default function Dashboard() {
     const [totalStorageUsed, setTotalStorageUsed] = useState(0);
     const [totalStorageCapacity, setTotalStorageCapacity] = useState(0);
     const [files, setFiles] = useState([]);
+    const [filesUploadedToday, setFilesUploadedToday] = useState(0);
 
     const api = new Api();
 
@@ -40,6 +41,11 @@ export default function Dashboard() {
                 );
                 setFiles(allFiles);
 
+                // Calcul du nombre de fichiers uploadés aujourd'hui
+                const today = new Date().toISOString().split('T')[0];
+                const uploadedToday = allFiles.filter(file => file.uploadDate.startsWith(today)).length;
+                setFilesUploadedToday(uploadedToday);
+
             } catch (error) {
                 setErrorMessage('Error fetching data');
                 console.error(error);
@@ -59,9 +65,10 @@ export default function Dashboard() {
             },
         ],
     };
+
     const roundToTwoDecimals = (num) => {
         return Math.round(num * 100) / 100;
-    }
+    };
 
     return (
         <div className="dashboard-app">
@@ -89,6 +96,7 @@ export default function Dashboard() {
                                         <th>Stockage Utilisé</th>
                                         <th>Stockage Disponible</th>
                                         <th>% Utilisation</th>
+                                        <th>Nombre de Fichiers</th>
                                         <th>Date de Création</th>
                                     </tr>
                                 </thead>
@@ -100,6 +108,7 @@ export default function Dashboard() {
                                             <td>{user.storageUsed} GB</td>
                                             <td>{user.storageCapacity - user.storageUsed} GB</td>
                                             <td>{user.storageUsagePercentage} %</td>
+                                            <td>{user.files.length}</td>
                                             <td>{user.createdDate}</td>
                                         </tr>
                                     ))}
@@ -112,12 +121,14 @@ export default function Dashboard() {
 
                     <div className="files-table-container">
                         <h2>Fichiers</h2>
+                        <p>Nombre total de fichiers : {files.length}</p>
+                        <p>Nombre de fichiers uploadés aujourd'hui : {filesUploadedToday}</p>
                         {files.length > 0 ? (
                             <table className="files-table">
                                 <thead>
                                     <tr>
                                         <th>Nom du Fichier</th>
-                                        <th>Format</th>
+                                        <th>Extension</th>
                                         <th>Poids (GB)</th>
                                         <th>Utilisateur</th>
                                         <th>Date d'Upload</th>
@@ -127,8 +138,8 @@ export default function Dashboard() {
                                     {files.map(file => (
                                         <tr key={file.id}>
                                             <td>{file.name}</td>
-                                            <td>{file.format}</td>
-                                            <td>{(roundToTwoDecimals(file.weight/1000))} GB</td>
+                                            <td>{file.name.split('.').pop()}</td>
+                                            <td>{roundToTwoDecimals(file.weight / 1000)} GB</td>
                                             <td>{file.userFirstName} {file.userName}</td>
                                             <td>{file.uploadDate}</td>
                                         </tr>

@@ -68,6 +68,7 @@ function App() {
                 <Route path="/addFile" element={<ProtectedRoute element={AddFile} roles={["ROLE_USER"]} />} />
                 <Route path="/dashboard" element={<ProtectedRoute element={Dashboard} roles={["ROLE_ADMIN"]} />} />
                 <Route path="/home" element={<ProtectedRoute element={Home} roles={["ROLE_USER", "ROLE_ADMIN"]} />} />
+                <Route path="/invoices" element={<ProtectedRoute element={InvoicesPage} roles={["ROLE_USER"]} />} />
                 <Route path="/profile" element={
                 <ProtectedRoute 
                     element={() => (
