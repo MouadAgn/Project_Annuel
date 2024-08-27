@@ -17,15 +17,20 @@ export const AuthProvider = ({ children }) => {
     if (token) {
         try {
             const decodedToken = jwtDecode(token);
-            setUser(decodedToken.roles[0]);
+            setUser({
+                roles: Array.isArray(decodedToken.roles) ? decodedToken.roles[0] : decodedToken.roles,
+                activated: decodedToken.activated,
+            });
         } catch (error) {
             localStorage.removeItem('token');
             setUser(null);
             navigate('/');
         }
+    } else {
+        setUser(null);
     }
     setLoading(false);
-    }, []);
+    }, [navigate]);
 
     // Used to update user data in the context
     const updateUser = (userData) => {

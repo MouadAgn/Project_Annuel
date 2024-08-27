@@ -35,7 +35,6 @@ export default function Dashboard() {
     return (
         <>
             <h1>Dashboard</h1>
-            <ResearchFilter />
             {errorMessage && <p className="error">{errorMessage}</p>}
             {/* {users.length > 0 && <List users={users} dataType="users" />} */}
             {/* {files.length > 0 && <List files={files} dataType="files" />} */}

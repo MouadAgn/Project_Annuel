@@ -1,0 +1,146 @@
+/* Base styles for the search filter container */
+.search-filter-container {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px;
+  margin: 0 auto;
+  max-width: 1200px;
+  background-color: #f9f9f9;
+  border: 1px solid #ccc;
+  border-radius: 8px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+}
+
+/* Styles for the search input and button */
+.search-container {
+  flex: 1;
+  display: flex;
+  align-items: center;
+}
+
+.search-input {
+  flex: 1; /* Grow to fill available space */
+  padding: 10px 12px;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  font-size: 16px;
+  height: 40px; /* Set a fixed height */
+  transition: border-color 0.3s;
+}
+
+.search-input:focus {
+  border-color: #007bff;
+  outline: none;
+}
+
+.search-button {
+  background-color: #007bff;
+  border: none;
+  color: white;
+  padding: 10px;
+  margin-left: 8px;
+  border-radius: 4px;
+  cursor: pointer;
+  height: 40px; /* Set the same fixed height as the input */
+  transition: background-color 0.3s;
+}
+
+.search-button:hover {
+  background-color: #0056b3;
+}
+
+/* Styles for the filter section */
+.filter-container {
+  position: relative;
+}
+
+.filter-button {
+  display: flex;
+  align-items: center;
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 10px;
+  cursor: pointer;
+  height: 40px; /* Set the same fixed height as the input */
+  transition: background-color 0.3s;
+}
+
+.filter-button:hover {
+  background-color: #e0e0e0;
+}
+
+.filter-options {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  margin-top: 8px;
+  width: 150px; /* Set a fixed width to avoid stretching */
+}
+
+/* Styling individual filter option buttons */
+.filter-options button {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px; /* Add padding for better spacing */
+  border: none;
+  background: none;
+  cursor: pointer;
+  width: 100%;
+  text-align: left;
+}
+
+/* Add space between icon and text */
+.filter-options button svg {
+  margin-right: 8px; /* Space between icon and text */
+}
+
+.filter-options button:hover {
+  background-color: #f0f0f0; /* Highlight on hover */
+}
+
+/* Additional padding for better spacing */
+.filter-options button span {
+  padding-left: 4px; /* Optional: Add padding to the text for more spacing */
+}
+
+/* Responsive Styles */
+@media (max-width: 768px) {
+  .search-filter-container {
+      flex-direction: column;
+      align-items: stretch;
+  }
+
+  .search-container {
+      margin-bottom: 16px;
+  }
+
+  .search-input {
+      font-size: 14px;
+  }
+
+  .search-button {
+      padding: 8px;
+  }
+
+  .filter-button {
+      width: 100%;
+      justify-content: center;
+  }
+}
+
+@media (max-width: 480px) {
+  .search-input {
+      font-size: 12px;
+  }
+
+  .search-button {
+      padding: 6px;
+  }
+}

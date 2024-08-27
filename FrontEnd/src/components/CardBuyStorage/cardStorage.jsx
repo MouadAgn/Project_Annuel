@@ -70,9 +70,11 @@ const PurchaseStorage = ({userName, errorMessage, setErrorMessage}) => {
 
     return (
         <div className="storage-container">
-            <button className="purchase-button" onClick={handlePurchaseClick}>
+            {!showModal && ( <button className="purchase-button" onClick={handlePurchaseClick}>
                 Ajouter plus d'espace à votre Stockage
             </button>
+            )}
+            
         
             {showModal && (
                 <div className="cardStorage">

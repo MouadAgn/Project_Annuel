@@ -1,5 +1,6 @@
 import React from 'react';
-import { Home as HomeIcon, Search, UserRoundPen, LogOut, ReceiptText} from 'lucide-react';
+
+import { Home as HomeIcon, UserRoundPen, LogOut, ReceiptText } from 'lucide-react';
 import './SideBar.css';
 
 const SideBar = () => {
@@ -16,5 +17,6 @@ const SideBar = () => {
     </aside>
   );
 };
+
 
 export default SideBar;

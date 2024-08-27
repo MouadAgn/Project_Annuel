@@ -38,10 +38,18 @@ const LoginForm = ({ switchToRegister, successMessage }) => {
         if (response.token) {
             localStorage.setItem('token', response.token);
             const decodedToken = jwtDecode(response.token);
-            setUser(decodedToken.roles[0]);
-            if (decodedToken.roles[0] === 'ROLE_USER'){
+            setUser({
+                roles: decodedToken.roles[0],
+                activated: decodedToken.activated,
+            });
+            if (decodedToken.roles[0] === 'ROLE_USER' && decodedToken.activated === false) {
+                console.log('Navigate to profile');
                 navigate('/profile');
+            } else if (decodedToken.roles[0] === 'ROLE_USER' && decodedToken.activated === true) {
+                console.log('Navigate to home');
+                navigate('home');
             } else {
+                console.log('Navigate to dashboard');
                 navigate('/dashboard');
             }
 

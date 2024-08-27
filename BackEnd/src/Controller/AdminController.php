@@ -136,7 +136,7 @@ class AdminController extends AbstractController
             $user->setZipCode($data['zipCode']);
             $user->setCity($data['city']);
             $user->setCountry($data['country']);
-
+                
             $em = $this->em;
             $em->persist($user);
             $em->flush();
