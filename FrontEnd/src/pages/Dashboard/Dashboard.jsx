@@ -14,6 +14,8 @@ export default function Dashboard() {
     const [totalStorageCapacity, setTotalStorageCapacity] = useState(0);
     const [files, setFiles] = useState([]);
     const [filesUploadedToday, setFilesUploadedToday] = useState(0);
+    const [fileExtensionsData, setFileExtensionsData] = useState({});
+
 
     const api = new Api();
 
@@ -46,6 +48,14 @@ export default function Dashboard() {
                 const uploadedToday = allFiles.filter(file => file.uploadDate.startsWith(today)).length;
                 setFilesUploadedToday(uploadedToday);
 
+                const extensionsCount = allFiles.reduce((acc, file) => {
+                    const extension = file.format;
+                    acc[extension] = (acc[extension] || 0) + 1;
+                    return acc;
+                }, {});
+
+                setFileExtensionsData(extensionsCount);
+
             } catch (error) {
                 setErrorMessage('Error fetching data');
                 console.error(error);
@@ -62,6 +72,17 @@ export default function Dashboard() {
                 data: [totalStorageUsed, totalStorageCapacity - totalStorageUsed],
                 backgroundColor: ['#3498db', '#2ecc71'],
                 hoverBackgroundColor: ['#2980b9', '#27ae60'],
+            },
+        ],
+    };
+
+    const extensionsPieData = {
+        labels: Object.keys(fileExtensionsData),
+        datasets: [
+            {
+                data: Object.values(fileExtensionsData),
+                backgroundColor: ['#3498db', '#2ecc71', '#e74c3c', '#f39c12', '#9b59b6'], // Ajouter plus de couleurs si nécessaire
+                hoverBackgroundColor: ['#2980b9', '#27ae60', '#c0392b', '#e67e22', '#8e44ad'],
             },
         ],
     };
@@ -84,7 +105,6 @@ export default function Dashboard() {
                             <Pie data={data} />
                         </div>
                     </div>
-
                     <div className="users-table-container">
                         <h2>Clients</h2>
                         {users.length > 0 ? (
@@ -121,8 +141,13 @@ export default function Dashboard() {
 
                     <div className="files-table-container">
                         <h2>Fichiers</h2>
-                        <p>Nombre total de fichiers : {files.length}</p>
-                        <p>Nombre de fichiers uploadés aujourd'hui : {filesUploadedToday}</p>
+                        <h2>Nombre total de fichiers : {files.length}</h2>
+                        <h2>Nombre de fichiers uploadés aujourd'hui : {filesUploadedToday}</h2>
+                        <div className="extensions-pie-chart">
+                            <div className="pie-container">
+                                <Pie data={extensionsPieData} />
+                            </div>
+                        </div>
                         {files.length > 0 ? (
                             <table className="files-table">
                                 <thead>
@@ -138,7 +163,7 @@ export default function Dashboard() {
                                     {files.map(file => (
                                         <tr key={file.id}>
                                             <td>{file.name}</td>
-                                            <td>{file.name.split('.').pop()}</td>
+                                            <td>{file.format}</td>
                                             <td>{roundToTwoDecimals(file.weight / 1000)} GB</td>
                                             <td>{file.userFirstName} {file.userName}</td>
                                             <td>{file.uploadDate}</td>

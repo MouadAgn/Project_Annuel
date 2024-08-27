@@ -90,4 +90,17 @@
 .files-table td {
     vertical-align: middle;
 }
+.extensions-pie-chart {
+    margin-top: 20px;
+    background-color: white;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+    text-align: center;
+}
+
+.pie-container {
+    width: 250px;
+    margin: 0 auto;
+}
 
