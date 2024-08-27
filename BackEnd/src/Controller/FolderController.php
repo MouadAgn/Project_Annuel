@@ -122,6 +122,48 @@ class FolderController extends AbstractController
         }
     }
 
+    #[Route('/api/folders/{folderId}/files', name: 'remove_file_from_folder', methods: ['DELETE'])]
+    public function removeFileFromFolder(Request $request, int $folderId): JsonResponse
+    {
+        $this->logger->info('Received request to remove file from folder', ['folderId' => $folderId]);
+        
+        $data = json_decode($request->getContent(), true);
+        $this->logger->info('Received data', ['data' => $data]);
+        
+        if (!isset($data['fileId'])) {
+            $this->logger->error('File ID not provided in request');
+            return new JsonResponse(['error' => 'File ID not provided'], 400);
+        }
+
+        $folder = $this->entityManager->getRepository(Folder::class)->find($folderId);
+        $file = $this->entityManager->getRepository(File::class)->find($data['fileId']);
+
+        if (!$folder) {
+            $this->logger->error('Folder not found', ['folderId' => $folderId]);
+            return new JsonResponse(['error' => 'Folder not found'], 404);
+        }
+
+        if (!$file) {
+            $this->logger->error('File not found', ['fileId' => $data['fileId']]);
+            return new JsonResponse(['error' => 'File not found'], 404);
+        }
+
+        if ($file->getFolder()->getId() !== $folderId) {
+            $this->logger->error('File does not belong to this folder', ['fileId' => $data['fileId'], 'folderId' => $folderId]);
+            return new JsonResponse(['error' => 'File does not belong to this folder'], 400);
+        }
+
+        try {
+            $file->setFolder(null);
+            $this->entityManager->flush();
+            $this->logger->info('File removed from folder successfully', ['fileId' => $file->getId(), 'folderId' => $folder->getId()]);
+            return new JsonResponse(['message' => 'File removed from folder successfully']);
+        } catch (\Exception $e) {
+            $this->logger->error('Error removing file from folder', ['error' => $e->getMessage()]);
+            return new JsonResponse(['error' => 'An error occurred while removing the file from the folder'], 500);
+        }
+    }
+
     #[Route('/api/folders/{id}/files', name: 'list_files_in_folder', methods: ['GET'])]
     public function listFilesInFolder(int $id): JsonResponse
     {

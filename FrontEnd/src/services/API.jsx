@@ -232,6 +232,26 @@ class Api {
 
     /* START INVOICES ROUTES */
 
+    async getInvoices(token) {
+        try {
+            const response = await fetch(`${this.baseUrl}/user/invoices`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                }
+            });
+
+            if (response.status === 200) {
+                const data = await response.json();
+                return data;
+            } else {
+                throw new Error("Invalid token or error fetching invoices");
+            }
+        } catch (error) {
+            throw error;
+        }
+    }
 
     /* END INVOICES ROUTES */
 }

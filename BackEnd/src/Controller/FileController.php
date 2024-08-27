@@ -30,86 +30,94 @@ class FileController extends AbstractController
      * Route pour l'ajout de fichier, méthode POST
      */
     #[Route('/api/add-file', name: 'add_file', methods: ['POST'])]
-    public function addFile(Request $request, SluggerInterface $slugger, EntityManagerInterface $entityManager, LoggerInterface $logger): Response
-    {
-        $uploadedFile = $request->files->get('file');
-    
-        if (!$uploadedFile || $uploadedFile->getError() !== UPLOAD_ERR_OK) {
-            $logger->error('No file received or upload error', [
-                'error' => $uploadedFile ? $uploadedFile->getError() : 'No file'
-            ]);
-            return new JsonResponse(['error' => 'Aucun fichier reçu ou une erreur est survenue lors du téléchargement'], 400);
-        }
-    
-        $tempPath = $uploadedFile->getPathname();
-        $logger->info('Temporary file path', ['path' => $tempPath]);
-    
-        if (!file_exists($tempPath)) {
-            $logger->error('Temporary file does not exist', ['path' => $tempPath]);
-            return new JsonResponse(['error' => 'Le fichier temporaire n\'existe pas'], 400);
-        }
-    
-        if (!is_readable($tempPath)) {
-            $logger->error('Temporary file is not readable', ['path' => $tempPath]);
-            return new JsonResponse(['error' => 'Le fichier temporaire n\'est pas lisible'], 400);
-        }
-    
-        try {
-            // Lire le contenu du fichier immédiatement
-            $content = file_get_contents($tempPath);
-            if ($content === false) {
-                $logger->error('Failed to read temporary file', ['path' => $tempPath]);
-                return new JsonResponse(['error' => 'Impossible de lire le fichier temporaire'], 500);
-            }
-    
-            $originalFilename = pathinfo($uploadedFile->getClientOriginalName(), PATHINFO_FILENAME);
-            $safeFilename = $slugger->slug($originalFilename);
-            $newFilename = $safeFilename.'-'.uniqid().'.'.$uploadedFile->guessExtension();
-            $uploadPath = $this->getParameter('uploads_directory').'/'.$newFilename;
-    
-            // Écrire le contenu dans le nouveau fichier
-            if (file_put_contents($uploadPath, $content) === false) {
-                $logger->error('Failed to write file', ['path' => $uploadPath]);
-                return new JsonResponse(['error' => 'Impossible d\'écrire le fichier'], 500);
-            }
-    
-            $logger->info('File written successfully', ['path' => $uploadPath]);
-    
-            // Create the File entity
-            $file = new File();
-            $file->setNameFile($newFilename);
-            $file->setWeight(strlen($content) / 1024 / 1024); // Size in MB
-            $file->setUploadDate(new \DateTime());
-            $file->setFormat($uploadedFile->guessExtension());
-            $file->setPath($uploadPath);
-            $file->setUser(null);
-    
-            // Persist the File entity
-            $logger->info('Attempting to persist file entity');
-            $entityManager->persist($file);
-            $logger->info('File entity persisted, attempting to flush');
-            $entityManager->flush();
-            $logger->info('Entity manager flushed successfully');
-    
-            $logger->info('File entry created in database', [
-                'file_id' => $file->getId(), // Assuming your entity has an getId() method
-                'file_name' => $file->getNameFile()
-            ]);
-    
-            return new JsonResponse([
-                'message' => 'Fichier uploadé avec succès et enregistré dans la base de données',
-                'file_id' => $file->getId(),
-                'file_name' => $file->getNameFile()
-            ], 200);
-    
-        } catch (\Exception $e) {
-            $logger->error('Error during file upload or database operation', [
-                'error' => $e->getMessage(),
-                'trace' => $e->getTraceAsString()
-            ]);
-            return new JsonResponse(['error' => 'Erreur lors de l\'upload ou de l\'enregistrement en base de données: '.$e->getMessage()], 500);
-        }
+public function addFile(Request $request, SluggerInterface $slugger, EntityManagerInterface $entityManager, LoggerInterface $logger): Response
+{
+    $uploadedFile = $request->files->get('file');
+
+    if (!$uploadedFile || $uploadedFile->getError() !== UPLOAD_ERR_OK) {
+        $logger->error('No file received or upload error', [
+            'error' => $uploadedFile ? $uploadedFile->getError() : 'No file'
+        ]);
+        return new JsonResponse(['error' => 'Aucun fichier reçu ou une erreur est survenue lors du téléchargement'], 400);
     }
+
+    // Vérification de la taille du fichier (20 Go = 20 * 1024 * 1024 * 1024 octets)
+    $maxFileSize = 20 * 1024 * 1024 * 1024; // 20 Go en octets
+    if ($uploadedFile->getSize() > $maxFileSize) {
+        $logger->error('File size exceeds 20 GB', ['size' => $uploadedFile->getSize()]);
+        return new JsonResponse(['error' => 'Le fichier ne doit pas dépasser 20 Go'], 400);
+    }
+
+    $tempPath = $uploadedFile->getPathname();
+    $logger->info('Temporary file path', ['path' => $tempPath]);
+
+    if (!file_exists($tempPath)) {
+        $logger->error('Temporary file does not exist', ['path' => $tempPath]);
+        return new JsonResponse(['error' => 'Le fichier temporaire n\'existe pas'], 400);
+    }
+
+    if (!is_readable($tempPath)) {
+        $logger->error('Temporary file is not readable', ['path' => $tempPath]);
+        return new JsonResponse(['error' => 'Le fichier temporaire n\'est pas lisible'], 400);
+    }
+
+    try {
+        // Lire le contenu du fichier immédiatement
+        $content = file_get_contents($tempPath);
+        if ($content === false) {
+            $logger->error('Failed to read temporary file', ['path' => $tempPath]);
+            return new JsonResponse(['error' => 'Impossible de lire le fichier temporaire'], 500);
+        }
+
+        $originalFilename = pathinfo($uploadedFile->getClientOriginalName(), PATHINFO_FILENAME);
+        $safeFilename = $slugger->slug($originalFilename);
+        $newFilename = $safeFilename.'-'.uniqid().'.'.$uploadedFile->guessExtension();
+        $uploadPath = $this->getParameter('uploads_directory').'/'.$newFilename;
+
+        // Écrire le contenu dans le nouveau fichier
+        if (file_put_contents($uploadPath, $content) === false) {
+            $logger->error('Failed to write file', ['path' => $uploadPath]);
+            return new JsonResponse(['error' => 'Impossible d\'écrire le fichier'], 500);
+        }
+
+        $logger->info('File written successfully', ['path' => $uploadPath]);
+
+        // Création de l'entité File
+        $file = new File();
+        $file->setNameFile($newFilename);
+        $file->setWeight(strlen($content) / 1024 / 1024); // Taille en Mo
+        $file->setUploadDate(new \DateTime());
+        $file->setFormat($uploadedFile->guessExtension());
+        $file->setPath($uploadPath);
+        $file->setUser(null);
+
+        // Persist l'entité File
+        $logger->info('Attempting to persist file entity');
+        $entityManager->persist($file);
+        $logger->info('File entity persisted, attempting to flush');
+        $entityManager->flush();
+        $logger->info('Entity manager flushed successfully');
+
+        $logger->info('File entry created in database', [
+            'file_id' => $file->getId(),
+            'file_name' => $file->getNameFile()
+        ]);
+
+        return new JsonResponse([
+            'message' => 'Fichier uploadé avec succès et enregistré dans la base de données',
+            'file_id' => $file->getId(),
+            'file_name' => $file->getNameFile()
+        ], 200);
+
+    } catch (\Exception $e) {
+        $logger->error('Error during file upload or database operation', [
+            'error' => $e->getMessage(),
+            'trace' => $e->getTraceAsString()
+        ]);
+        return new JsonResponse(['error' => 'Erreur lors de l\'upload ou de l\'enregistrement en base de données: '.$e->getMessage()], 500);
+    }
+}
+
 
 
 /**
