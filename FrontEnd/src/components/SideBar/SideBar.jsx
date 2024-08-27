@@ -9,11 +9,11 @@ const SideBar = () => {
         <ul>
           <li><a href="/home"><HomeIcon size={20} /><span>Home</span></a></li>
           <li><a href="#browse"><Search size={20} /><span>Browse</span></a></li>
-          <li><a href="#profile"><UserRoundPen size={20} /><span>Profile</span></a></li>
+          <li><a href="/profile"><UserRoundPen size={20} /><span>Profile</span></a></li>
         </ul>
       </nav>
     </aside>
   );
 };
 
-export default SideBar;
+export default SideBar; 

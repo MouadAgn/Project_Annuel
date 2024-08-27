@@ -2,7 +2,6 @@ import React, { useState, useEffect } from 'react';
 // import { useNavigate } from 'react-router-dom';
 
 
-import ResearchFilter from '@components/ResearchFilter/ResearchFilter.jsx'
 import Api from '@services/Api.jsx';
 
 
@@ -33,7 +32,6 @@ export default function Dashboard() {
     return (
         <>
             <h1>Dashboard</h1>
-            <ResearchFilter />
             {errorMessage && <p className="error">{errorMessage}</p>}
             {users.length > 0 && <List users={users} dataType="users" />}
             {/* {files.length > 0 && <List files={files} dataType="files" />} */}

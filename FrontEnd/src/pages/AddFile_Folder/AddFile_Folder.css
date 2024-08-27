@@ -1,0 +1,196 @@
+
+/* Styles for the new button and dropdown */
+.new-button-container {
+  position: relative;
+  width: 100%; /* Full width for the button container */
+  margin-top: 4Opx;
+  margin-bottom: 40px;
+}
+
+/* Align the button to the left */
+.new-button {
+
+  display: flex;
+  align-items: center;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  border-radius: 5px;
+  padding: 10px 15px;
+  font-size: 16px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+  margin-left: 0; /* Ensure no margin */
+  width: fit-content; /* Set to fit-content to avoid stretching */
+}
+
+.new-button:hover {
+  background-color: #0056b3;
+}
+
+.dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0; /* Align dropdown options to the left */
+  background-color: white;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+  z-index: 1000;
+  width: 150px; /* Fixed width for dropdown */
+  margin-top: 8px;
+  display: flex;
+  flex-direction: column; /* Stack options vertically */
+}
+
+/* Styles for dropdown buttons */
+.dropdown-menu button {
+  display: flex;
+  align-items: center;
+  padding: 10px 12px; /* Added horizontal padding */
+  border: none;
+  background: none;
+  cursor: pointer;
+  width: 100%; /* Make option buttons full width */
+  text-align: left;
+}
+
+.dropdown-menu button:hover {
+  background-color: #f0f0f0; /* Highlight on hover */
+}
+
+/* Add space between icon and text */
+.dropdown-menu button svg {
+  margin-right: 8px; /* Space between icon and text */
+}
+
+/* Modal styles */
+.modal-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal {
+  background-color: white;
+  border-radius: 8px;
+  padding: 20px;
+  max-width: 400px;
+  width: 100%;
+  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
+}
+
+.modal-content {
+  display: flex;
+  flex-direction: column;
+}
+
+/* File upload form styles */
+.file-upload-form, .folder-creation-form {
+  display: flex;
+  flex-direction: column;
+}
+
+.file-input-container {
+  margin-bottom: 20px;
+}
+
+.file-input {
+  display: none; /* Hide the input */
+}
+
+.file-input-label {
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 10px;
+  display: block;
+  cursor: pointer;
+  text-align: center;
+}
+
+.upload-button, .create-folder-button {
+  background-color: #28a745;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 10px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.upload-button:hover, .create-folder-button:hover {
+  background-color: #218838;
+}
+
+/* Progress bar styles */
+.progress-bar {
+  width: 100%;
+  background-color: #e0e0e0;
+  border-radius: 4px;
+  margin-top: 10px;
+}
+
+.progress {
+  height: 8px;
+  background-color: #007bff;
+  border-radius: 4px;
+}
+
+/* Close modal button */
+.close-modal {
+  background-color: #dc3545;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  padding: 10px;
+  cursor: pointer;
+  margin-top: 10px;
+  transition: background-color 0.3s;
+}
+
+.close-modal:hover {
+  background-color: #c82333;
+}
+
+/* Input styles for folder name */
+.input-container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 20px;
+}
+
+.folder-input {
+  flex: 1;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 10px;
+  font-size: 16px;
+  margin-left: 10px; /* Space between icon and input */
+}
+
+/* Responsive Styles */
+@media (max-width: 480px) {
+  .new-button {
+      font-size: 14px;
+      padding: 8px 12px;
+  }
+
+  .dropdown-menu button {
+      padding: 8px;
+  }
+
+  .modal {
+      padding: 15px;
+      width: 90%;
+  }
+
+  .file-input-label, .upload-button, .create-folder-button, .close-modal {
+      padding: 8px 12px;
+  }
+}
