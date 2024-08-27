@@ -1,58 +1,195 @@
 .folders-list {
-    margin-top: 1rem;
+  margin-top: 1rem;
+  overflow-x: auto; /* Activer le défilement horizontal */
+  white-space: nowrap; /* Empêche les éléments de passer à la ligne suivante */
+}
+.folders-container {
+  overflow-x: auto;
+  white-space: nowrap;
+}
+
+.folder-list {
+  display: flex;
+  padding: 0;
+  margin: 0;
+  list-style-type: none;
+}
+
+.folder-item {
+  display: inline-flex;
+  align-items: center;
+  padding: 0.5rem;
+  border: 1px solid #dee2e6;
+  border-radius: 4px;
+  margin-right: 1rem;
+  cursor: pointer;
+}
+
+.folder-pagination {
+  display: flex;
+  justify-content: center;
+  margin-top: 1rem;
+}
+
+.pagination-arrow,
+.pagination-button {
+  background-color: #fff;
+  border: 1px solid #dee2e6;
+  padding: 0.5rem 1rem;
+  margin: 0 0.25rem;
+  cursor: pointer;
+}
+
+.pagination-button.active {
+  background-color: #007bff;
+  color: #fff;
+}
+
+.pagination-arrow:disabled,
+.pagination-button:disabled {
+  background-color: #e9ecef;
+  cursor: not-allowed;
+}
+
+
+
+
+.folder-item:hover {
+  background-color: #e0e0e0; /* Button-like effect on hover */
+}
+
+.folder-icon {
+  margin-right: 0.5rem;
+}
+
+.folder-name {
+  font-weight: bold;
+  margin-right: auto; /* Push delete button to the right */
+  cursor: pointer
+}
+
+.folder-file-count {
+  color: #6c757d;
+  margin-right: 1rem; /* Space between file count and delete button */
+  margin-top: 10px;
+}
+
+.delete-folder-button {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #dc3545; /* Red color for delete button */
+  
+}
+
+.folder-nav {
+  background: none;
+  border: none;
+  cursor: pointer;
+  color: #007bff; /* Color for navigation arrows */
+  margin: 0 1rem;
+  font-size: 18px; /* Arrow size */
+}
+
+.folder-nav:disabled {
+  color: #ccc; /* Color for disabled arrow */
+  cursor: not-allowed; /* Change cursor on disabled */
+}
+
+.error-message {
+  color: red;
+  margin: 1rem 0;
+}
+
+.file-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.file-table th,
+.file-table td {
+  padding: 0.75rem;
+  text-align: left;
+  border-bottom: 1px solid #dee2e6;
+}
+
+.action-button {
+  background: none;
+  border: none;
+  color: #007bff;
+  cursor: pointer;
+}
+
+.action-button:hover {
+  text-decoration: underline;
+}
+
+/* Styles for pagination */
+.pagination {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  margin-top: 20px;
+}
+
+/* Pagination buttons */
+.pagination-button,
+.pagination-arrow {
+  background-color: #f0f0f0;
+  border: 1px solid #ccc;
+  border-radius: 4px;
+  padding: 8px 12px;
+  margin: 0 4px;
+  cursor: pointer;
+  font-size: 16px;
+  transition: background-color 0.3s ease;
+}
+
+/* Active button */
+.pagination-button.active {
+  background-color: #007bff;
+  color: #fff;
+  border-color: #007bff;
+}
+
+/* Hover effect */
+.pagination-button:hover,
+.pagination-arrow:hover {
+  background-color: #e0e0e0;
+}
+
+/* Navigation arrows */
+.pagination-arrow {
+  font-size: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Align text in buttons */
+.pagination-button,
+.pagination-arrow {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+/* Responsive styles */
+@media (max-width: 768px) {
+  .folder-list li {
+    padding: 0.25rem; /* Smaller padding for mobile */
+    margin-right: 0.5rem; /* Smaller margin */
   }
   
-  .folders-list ul {
-    list-style-type: none;
-    padding: 0;
+  .delete-folder-button {
+    font-size: 14px; /* Smaller delete button font */
   }
-  
-  .folders-list li {
-    display: flex;
-    align-items: center;
-    padding: 0.5rem 0;
-    border-bottom: 1px solid #dee2e6;
-    cursor: pointer;
-  }
-  
-  .folder-icon {
-    margin-right: 0.5rem;
-  }
-  
-  .folder-name {
-    font-weight: bold;
-    margin-right: auto;
-  }
-  
+
   .folder-file-count {
-    color: #6c757d;
+    font-size: 12px; /* Smaller font for file count */
   }
-  
-  .error-message {
-    color: red;
-    margin: 1rem 0;
+
+  .folder-name {
+    font-size: 14px; /* Smaller font for folder name */
   }
-  
-  .file-table {
-    width: 100%;
-    border-collapse: collapse;
-  }
-  
-  .file-table th,
-  .file-table td {
-    padding: 0.75rem;
-    text-align: left;
-    border-bottom: 1px solid #dee2e6;
-  }
-  
-  .action-button {
-    background: none;
-    border: none;
-    color: #007bff;
-    cursor: pointer;
-  }
-  
-  .action-button:hover {
-    text-decoration: underline;
-  }
-  
+}
