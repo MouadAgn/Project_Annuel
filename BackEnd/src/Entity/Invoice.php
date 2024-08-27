@@ -29,6 +29,11 @@ class Invoice
     #[ORM\JoinColumn(nullable: true)]
     private ?User $user = null;
 
+    public function __construct()
+    {
+        $this->purchasedDate = new \DateTime();
+    }
+
     public function getId(): ?int
     {
         return $this->id;

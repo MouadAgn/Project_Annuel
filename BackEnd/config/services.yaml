@@ -22,6 +22,20 @@ services:
             $logger: '@logger'
         tags:
             - { name: kernel.event_listener, event: kernel.request }
+
+    App\Service\UserStorageService : 
+        arguments:
+            $em: '@Doctrine\ORM\EntityManagerInterface'
+
+    App\Controller\PaymentController:
+        autowire: true
+        tags: ['controller.service_arguments']
+
+    App\EventListener\JWTCreatedListener:
+        tags:
+            - { name: kernel.event_listener, event: lexik_jwt_authentication.on_jwt_created, method: onJWTCreated }
+
+        
 # Déclaration du service EntityManagerInterface
     Doctrine\ORM\EntityManagerInterface:
         alias: doctrine.orm.entity_manager

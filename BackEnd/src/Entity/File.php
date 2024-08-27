@@ -6,17 +6,22 @@ use App\Repository\FileRepository;
 use Doctrine\DBAL\Types\Types;
 use Doctrine\ORM\Mapping as ORM;
 
+use Symfony\Component\Serializer\Annotation\Groups;
+
 #[ORM\Entity(repositoryClass: FileRepository::class)]
 class File
 {
     #[ORM\Id]
     #[ORM\GeneratedValue]
     #[ORM\Column]
+    #[Groups(['user'])]
     private ?int $id = null;
 
+    #[Groups(['user'])]
     #[ORM\Column(length: 255)]
     private ?string $nameFile = null;
 
+    #[Groups(['user'])]
     #[ORM\Column]
     private ?float $weight = null;
 
@@ -30,8 +35,13 @@ class File
     private ?string $path = null;
 
     #[ORM\ManyToOne(inversedBy: 'files')]
-    #[ORM\JoinColumn(nullable: false)]
+    #[ORM\JoinColumn(nullable: true)]
     private ?User $user = null;
+
+    #[ORM\ManyToOne(inversedBy: 'files')]
+    #[ORM\JoinColumn(nullable: true)]
+    private ?Folder $folder = null;
+
     public function getId(): ?int
     {
         return $this->id;
@@ -105,6 +115,18 @@ class File
     public function setUser(?User $user): static
     {
         $this->user = $user;
+
+        return $this;
+    }
+
+    public function getFolder(): ?Folder
+    {
+        return $this->folder;
+    }
+
+    public function setFolder(?Folder $folder): static
+    {
+        $this->folder = $folder;
 
         return $this;
     }

@@ -1,0 +1,19 @@
+/* Checkout Button */
+.checkout-Form .checkout-Confirm {
+    margin-top: 10px;
+    padding: 10px 20px;
+    background-color: #3498db;
+    color: white;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.checkout-Form .checkout-Cancel {
+    padding: 10px 20px;
+    background-color: #bdc3c7;
+    color: #2c3e50;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}

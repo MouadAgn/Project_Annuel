@@ -1,4 +1,4 @@
-import './ResearchFilter.css';
+// import './ResearchFilter.css';
 
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome'
 import { faArrowUp, faArrowDown, faMagnifyingGlass } from '@fortawesome/free-solid-svg-icons'
@@ -47,6 +47,7 @@ export default function ResearchFilter() {
                         <option value="all">Tout</option>
                         <option value="name">Nom</option>
                         <option value="date">Date</option>
+                        <option value="size">Taille</option>
                     </select>
                 </div>
                 <div className="researchFilterSort" onClick={handleSortChange}>

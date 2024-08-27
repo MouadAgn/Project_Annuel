@@ -5,12 +5,25 @@ Installer les dépendances :
 
 `composer i`
 
+Générer une Pair de clés : 
+
+`cd .\BackEnd`
+
+`php bin/console lexik:jwt:generate-keypair`
+
 
 Ajouter des fakes données : 
 
 `cd .\BackEnd`
 
 `php bin/console doctrine:fixtures:load`
+
+Démarrer le serveur : 
+
+`cd .\BackEnd`
+
+
+`symfony serve`
 
 
 #### MAILER : 
@@ -24,3 +37,9 @@ Installer les dépendances :
 `cd .\FrontEnd`
 
 `npm i`
+
+Démarrer le serveur : 
+
+`cd .\FrontEnd`
+
+`npm run dev`

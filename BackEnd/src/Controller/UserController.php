@@ -2,7 +2,11 @@
 
 namespace App\Controller;
 
+use App\Service\UserStorageService;
+
 use App\Entity\User;
+use App\Entity\Invoice;
+
 use Doctrine\ORM\EntityManagerInterface;
 
 use Symfony\Component\HttpFoundation\Request;
@@ -19,11 +23,13 @@ class UserController extends AbstractController
 {
     private $em;
     private $mailer;
+    private $userStorageService;
 
-    public function __construct(EntityManagerInterface $em, MailerInterface $mailer)
+    public function __construct(EntityManagerInterface $em, MailerInterface $mailer, UserStorageService $userStorageService)
     {
         $this->em = $em;
         $this->mailer = $mailer;
+        $this->userStorageService = $userStorageService;
     }
 
     /**
@@ -32,23 +38,30 @@ class UserController extends AbstractController
     #[Route('/profile', name: 'profile', methods: ['GET'])]
     public function getUserProfile(): JsonResponse
     {
-        // Get the current user from the token
+        /** @var User $user */
         $user = $this->getUser();
     
         if (!$user) {
-            // Return an error if the user is not found or not authenticated
             return $this->json(['status' => 'KO', 'message' => 'User not found or not authenticated'], status: JsonResponse::HTTP_FORBIDDEN);
         }
-    
-        //  Return the user's information
-        return $this->json($user, context: ['groups' => 'user']);
+
+        $totalStorageCapacity = $this->userStorageService->getUserStorageCapacityInGB($user);
+        $totalStorageUsed = $this->userStorageService->calculateTotalStorageUsed($user);
+
+        $userData = [ 
+            'user' => $user,
+            'totalStorageCapacity' => $totalStorageCapacity,
+            'totalStorageUsed' => $totalStorageUsed,
+        ];
+
+        return $this->json($userData, context: ['groups' => 'user']);
     }
 
     /**
      * Route for updating a user's information
      */
     #[Route('/update', name: 'update', methods: ['PATCH'])]
-    public function updateUser(int $id, Request $request): JsonResponse
+    public function updateUser(Request $request): JsonResponse
     {
         try {
 
@@ -100,14 +113,22 @@ class UserController extends AbstractController
     
             foreach ($data as $field => $value) {
                 switch ($field) {
-                    case 'name': $user->setName($value); break;
-                    case 'firstName': $user->setFirstName($value); break;
-                    case 'password': $user->setPassword($value); break;
-                    case 'mail': $user->setMail($value); break;
-                    case 'address': $user->setAddress($value); break;
-                    case 'zipCode': $user->setZipCode($value); break;
-                    case 'city': $user->setCity($value); break;
-                    case 'country': $user->setCountry($value); break;
+                    case 'name': $user->setName($value); 
+                        break;
+                    case 'firstName': $user->setFirstName($value); 
+                        break;
+                    case 'password': $user->setPassword($value); 
+                        break;
+                    case 'mail': $user->setMail($value); 
+                        break;
+                    case 'address': $user->setAddress($value); 
+                        break;
+                    case 'zipCode': $user->setZipCode($value); 
+                        break;
+                    case 'city': $user->setCity($value); 
+                        break;
+                    case 'country': $user->setCountry($value); 
+                        break;
                 }
             }
     
@@ -138,10 +159,11 @@ class UserController extends AbstractController
             }
             
             $userName = $user->getName();
+
             // Get the number of files
             $userNbFiles = $user->getFiles()->count();
 
-            // Set to null the user in the invoices
+            // Set to null the user_id in the invoices
             $invoices = $user->getInvoices();
             foreach ($invoices as $invoice) {
                 $invoice->setUser(null);
@@ -177,7 +199,7 @@ class UserController extends AbstractController
     /**
      * Route for adding storage to a user
      */
-    #[Route('/add_storage', name: 'addStorage', methods: ['PUT'])]
+    #[Route('/addStorage', name: 'addStorage', methods: ['PUT'])]
     public function addStorage(): JsonResponse
     {
         try {
@@ -191,6 +213,14 @@ class UserController extends AbstractController
             * @var User $user
             */
             $user->setStorageCapacity($user->getStorageCapacity() + 20000);
+
+            $invoice = new Invoice();
+            $invoice->setPdf('invoice.pdf');
+            $invoice->setUser($user);
+            
+            $this->em->persist($invoice);
+            $this->em->flush();
+            // $user->addInvoice($invoice);
 
             $this->em->persist($user);
             $this->em->flush();
