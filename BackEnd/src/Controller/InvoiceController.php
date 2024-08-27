@@ -154,31 +154,23 @@ class InvoiceController extends AbstractController
         $pdf->writeHTML($htmlContent);
 
             // Define the invoices directory within the public directory
-    $invoicesDir = $this->getParameter('kernel.project_dir') . '/public/invoices';
-
-    // Ensure the invoices directory exists
-    if (!is_dir($invoicesDir)) {
-        mkdir($invoicesDir, 0775, true);
-    }
-
-    // Generate the PDF file name and path
-    $pdfFileName = 'invoice_' . uniqid() . '.pdf';
-    $pdfFilePath = $invoicesDir . '/' . $pdfFileName;
-
-    // Output the PDF to the file path
-    $pdf->Output($pdfFilePath, 'F');
-
-    // Store the relative path in the database
-    $invoice->setPdf('/invoices/' . $pdfFileName);
-
-    // Validate and save the invoice entity
-    $errors = $validator->validate($invoice);
-    if (count($errors) > 0) {
-        return new JsonResponse(['error' => (string) $errors], 400);
-    }
-
-    $this->entityManager->persist($invoice);
-    $this->entityManager->flush();
+            $invoicesDir = $this->getParameter('kernel.project_dir') . '/invoices';
+            if (!is_dir($invoicesDir)) {
+                mkdir($invoicesDir, 0775, true);
+            }
+    
+            $pdfFilePath = $invoicesDir . '/invoice_' . uniqid() . '.pdf';
+            $pdf->Output($pdfFilePath, 'F');
+    
+            $invoice->setPdf($pdfFilePath);
+    
+            $errors = $validator->validate($invoice);
+            if (count($errors) > 0) {
+                return new JsonResponse(['error' => (string) $errors], 400);
+            }
+    
+            $this->entityManager->persist($invoice);
+            $this->entityManager->flush();
 
         return new JsonResponse(['message' => 'Invoice created successfully', 'invoice_id' => $invoice->getId()], 201);
     }
