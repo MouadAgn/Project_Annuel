@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useLocation } from 'react-router-dom'
 
-import Dashboard from '@pages/Dashboard'
+import Dashboard from '@pages/Dashboard/Dashboard'
 import Profile from '@pages/profile/profile'
 import Logout from '@components/logout'
 import Login from '@pages/LoginRegister'
@@ -15,8 +15,6 @@ import FilesInFolder from '@pages/FolderFileList/FolderFileList'
 import Home from '@pages/Home/Home'
 import SideBar from '@components/SideBar/SideBar'
 import InvoicesPage from '@pages/Invoices/invoices'; 
-
-
 import AuthContext, { AuthProvider } from '@services/Security';
 import React, { useContext } from 'react';
 

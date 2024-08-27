@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import Api from '@services/Api.jsx'; // Assurez-vous que ce chemin est correct
+import Api from '@services/Api.jsx'; 
 
 import './invoices.css';
 
