@@ -225,6 +225,146 @@ class Api {
 
     /* START FILES ROUTES */
 
+    async addFile(token, formData) {
+        try {
+            const response = await fetch(`${this.baseUrl}/user/add-file`, {
+                method: 'POST',
+                headers: {
+                    Authorization: `Bearer ${token}`,
+                },
+                body: formData  // Ne pas définir Content-Type ici
+            });
+    
+            if (!response.ok) {
+                const errorData = await response.json();
+                throw new Error(errorData.message || 'Erreur lors de l\'upload du fichier');
+            }
+    
+            return await response.json();
+        } catch (error) {
+            console.error('Error in addFile:', error);
+            throw error;
+        }
+    }
+
+    async createFolder(folderName) {
+        try {
+            const response = await fetch(`${this.baseUrl}/folders`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ name: folderName }),
+            });
+
+            if (!response.ok) {
+                throw new Error('Erreur lors de la création du dossier');
+            }
+
+            return await response.json();
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async listFiles() {
+        try {
+            const response = await fetch(`${this.baseUrl}/list-files`);
+            if (!response.ok) {
+                throw new Error('Erreur lors de la récupération de la liste des fichiers');
+            }
+            return await response.json();
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async listFolders() {
+        try {
+            const response = await fetch(`${this.baseUrl}/folders`);
+            if (!response.ok) {
+                throw new Error('Erreur lors de la récupération de la liste des dossiers');
+            }
+            return await response.json();
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async getFolders() {
+        const response = await fetch(`${this.baseUrl}/folders`);
+        if (!response.ok) {
+            throw new Error('An error occurred while loading folders');
+        }
+        return response.json();
+    }
+    
+    async getFolderFiles(folderId) {
+        const response = await fetch(`${this.baseUrl}/folders/${folderId}/files`);
+        if (!response.ok) {
+            throw new Error('Error fetching files');
+        }
+        return response.json();
+    }
+
+    async deleteFileFromFolder(folderId, fileId) {
+        const response = await fetch(`${this.baseUrl}/folders/${folderId}/files`, {
+            method: 'DELETE',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ fileId }),
+        });
+        if (!response.ok) {
+            throw new Error('Error deleting file');
+        }
+        return response.json();
+    }
+
+    async deleteFolder(folderId) {
+        const response = await fetch(`${this.baseUrl}/folders/${folderId}`, {
+            method: 'DELETE',
+        });
+        if (!response.ok) {
+            throw new Error('Error deleting folder');
+        }
+        return response.json();
+    }
+
+    async addFileToFolder(folderId, fileId) {
+        const response = await fetch(`${this.baseUrl}/folders/${folderId}/files`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ fileId }),
+        });
+        if (!response.ok) {
+            throw new Error('Error adding file to folder');
+        }
+        return response.json();
+    }
+
+    async deleteFile(filename) {
+        const response = await fetch(`${this.baseUrl}/delete-file/${filename}`, {
+            method: 'DELETE'
+        });
+        if (!response.ok) {
+            throw new Error('Error deleting the file');
+        }
+        return await response.json();
+    }
+
+    async getFiles() {
+        const response = await fetch(`${this.baseUrl}/list-files`);
+        if (!response.ok) {
+            throw new Error('Error fetching files');
+        }
+        return await response.json();
+    }
+
+
+
 
     /* END FILES ROUTES */
 
