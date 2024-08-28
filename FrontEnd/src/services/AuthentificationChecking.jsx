@@ -1,22 +1,22 @@
-// Validation du format de l'email
+// Validate email format
 export const validateEmail = (email) => {
     const result = /^[a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,4}$/;
     return result.test(email);
 };
 
-// Validation de la force du mot de passe
+// Validate password format
 export const validatePassword = (password) => {
-    // Au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial
+    // Atleast one lowercase, one uppercase, one digit, one special character, minimum 8 characters
     const result = /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@$!%*?&])[A-Za-z\d@$!%*?&]{8,}$/;
     return result.test(password);
 };
 
-// Prévention des attaques XSS
+// Clean the input by removing HTML tags and limiting the length
 export const cleanInput = (input) => {
-    return encodeURIComponent(input);
+    return input.replace(/<[^>]*>/g, '').trim().slice(0, 255);
 };
 
-// Nettoyage des espaces inutiles pour les mail
+// Clean the email by removing extra spaces
 export const cleanMail = (input) => {
     return input.trim().replace(/\s+/g, ' ');
 };

@@ -64,7 +64,7 @@ class User implements PasswordAuthenticatedUserInterface, UserInterface
     
     #[ORM\Column]
     // Megaoctets
-    private ?int $storageCapacity = 20000;
+    private ?int $storageCapacity = 0;
 
     #[ORM\Column(type: "integer")]
     private int $role = self::ROLE_USER;

@@ -52,7 +52,10 @@ class RegistrationController extends AbstractController
             $data = json_decode($request->getContent(), true);
             // var_dump($data);
 
-            $this->logger->info('User registration', $data);
+            // $this->logger->info('User registration', $data);
+
+            $data = array_map('trim', $data);
+            $data = array_map('strip_tags', $data);
 
             // Check if the data is present and if its not empty
             if ((!isset($data['name']) || empty($data['name'])) || 
@@ -66,18 +69,28 @@ class RegistrationController extends AbstractController
                 return new JsonResponse(['status' => 'Missing data'], Response::HTTP_BAD_REQUEST);
             } 
 
+
             // Check if the data is valid according to their type
             $errors = [];
-            if (!is_string($data['name'] ?? null)) $errors['name'] = 'Must be a string';
-            if (!is_string($data['firstName'] ?? null)) $errors['firstName'] = 'Must be a string';
-            if (!is_string($data['password'] ?? null)) $errors['password'] = 'Must be a string';
-            if (!is_string($data['mail'] ?? null)) $errors['mail'] = 'Must be a string';
-            if (!is_string($data['address'] ?? null)) $errors['address'] = 'Must be a string';
-            if (!is_int($data['zipCode'] ?? null)) $errors['zipCode'] = 'Must be an integer';
-            if (!is_string($data['city'] ?? null)) $errors['city'] = 'Must be a string';
-            if (!is_string($data['country'] ?? null)) $errors['country'] = 'Must be a string';
-
-            // If one of the data is not valid, return an error
+            if (!is_string($data['name'] ?? null)) $errors['name'] = 'Doit être une chaîne de caractères';
+            if (!is_string($data['firstName'] ?? null)) $errors['firstName'] = 'Doit être une chaîne de caractères';
+            if (!is_string($data['password'] ?? null)) $errors['password'] = 'Doit être une chaîne de caractères';
+            if (!is_string($data['mail'] ?? null)) $errors['mail'] = 'Doit être une chaîne de caractères';
+            if (!is_string($data['address'] ?? null)) $errors['address'] = 'Doit être une chaîne de caractères';
+            // if (!is_int($data['zipCode'] ?? null)) $errors['zipCode'] = 'Doit être un entier';
+            if (!is_string($data['city'] ?? null)) $errors['city'] = 'Doit être une chaîne de caractères';
+            if (!is_string($data['country'] ?? null)) $errors['country'] = 'Doit être une chaîne de caractères';
+            
+            if (strlen($data['password']) < 8) $errors['password'] = 'Doit contenir au moins 8 caractères';
+            if (!filter_var($data['mail'], FILTER_VALIDATE_EMAIL)) $errors['mail'] = 'Doit être une adresse email valide';
+            if (!preg_match("/^[\p{L} ]+$/u", $data['name'])) {
+                $errors['name'] = 'Ne doit contenir que des lettres et des espaces';
+            }
+            if (!preg_match("/^[\p{L} ]+$/u", $data['firstName'])) {
+                $errors['firstName'] = 'Ne doit contenir que des lettres et des espaces';
+            }
+            
+            // If there are errors, return them
             if (!empty($errors)) {
                 return new JsonResponse(['errors' => $errors], Response::HTTP_BAD_REQUEST);
             }
@@ -104,13 +117,15 @@ class RegistrationController extends AbstractController
                 return new JsonResponse(['errors' => $errorsString], Response::HTTP_BAD_REQUEST);
             }
 
+            
+
             // Send a confirmation email
-            $email = (new Email())
-                ->from($_ENV['MAILER_FROM_ADDRESS'])
-                ->to($user->getMail())
-                ->subject('Bienvenue sur notre Application de stockage en ligne !')
-                ->text('Votre compte à bien été créé !');
-            $this->mailer->send($email);
+            // $email = (new Email())
+            //     ->from($_ENV['MAILER_FROM_ADDRESS'])
+            //     ->to($user->getMail())
+            //     ->subject('Bienvenue sur notre Application de stockage en ligne !')
+            //     ->text('Votre compte à bien été créé !');
+            // $this->mailer->send($email);
 
             $this->em->persist($user);
             $this->em->flush();
