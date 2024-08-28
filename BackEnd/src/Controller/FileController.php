@@ -14,9 +14,10 @@ use Symfony\Component\Finder\Finder;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\File;
-use App\Entity\User;
 
 use Psr\Log\LoggerInterface;
+
+use App\Entity\User;
 
 
 class FileController extends AbstractController
@@ -130,7 +131,6 @@ class FileController extends AbstractController
         return new JsonResponse(['error' => 'Erreur lors de l\'upload ou de l\'enregistrement en base de données: '.$e->getMessage()], 500);
     }
 }
-
 
 
 /**

@@ -28,158 +28,6 @@ class InvoiceController extends AbstractController
         $this->security = $security;
     }    
 
-    #[Route("/api/invoice/create", name: 'invoice_create', methods: ['POST'])]
-    public function createInvoice(Request $request, ValidatorInterface $validator): JsonResponse
-    {
-        // Récupérer l'utilisateur actuellement connecté
-        /**
-        * @var User $user
-        */
-        $user = $this->getUser();
-
-        if (!$user) {
-            return new JsonResponse(['status' => 'KO', 'message' => 'User not found or not authenticated'], JsonResponse::HTTP_NOT_FOUND);
-        }
-
-        // Vérifiez que l'utilisateur est bien une instance de votre classe User
-        if (!$user instanceof User) {
-            return new JsonResponse(['error' => 'Invalid user type'], 500);
-        }
-
-        $invoice = new Invoice();
-        $invoice->setPurchasedDate(new \DateTime());
-        $invoice->setUser($user);
-
-        // Generate the PDF
-        $pdf = new TCPDF();
-        $pdf->AddPage();
-
-        
-        $htmlContent = "
-            <style>
-                body { font-family: Arial, sans-serif; }
-                h1 { color: #333; }
-                p { color: #666; line-height: 1.6; }
-                .invoice-template {
-                    width: 100%;
-                    padding: 20px;
-                    border: 1px solid #ddd;
-                    border-radius: 5px;
-                    background-color: #f9f9f9;
-                    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
-                }
-                .invoice-header {
-                    display: flex;
-                    justify-content: space-between;
-                    align-items: flex-start;
-                    margin-bottom: 20px;
-                }
-                .invoice-header .left {
-                    text-align: left;
-                }
-                .invoice-header .right {
-                    text-align: right;
-                    font-weight: bold;
-                }
-                .invoice-body {
-                    margin-bottom: 20px;
-                }
-                .invoice-footer {
-                    border-top: 1px solid #ddd;
-                    padding-top: 10px;
-                    text-align: center;
-                    color: #888;
-                }
-                .table {
-                    width: 100%;
-                    border-collapse: collapse;
-                    margin-bottom: 20px;
-                }
-                .table th, .table td {
-                    border: 1px solid #ddd;
-                    padding: 8px;
-                    text-align: left;
-                }
-                .table th {
-                    background-color: #f2f2f2;
-                }
-                .total {
-                    text-align: right;
-                }
-                .total-amount {
-                    font-weight: bold;
-                    font-size: 1.2em;
-                }
-            </style>
-        
-            <div class='invoice-template'>
-                <div class='invoice-header'>
-                    <div class='left'>
-                        <h1>FACTURE N° " . $invoice->getId() . "</h1>
-                        <p><strong>Nom de l'entreprise : </strong> " . "Tech Innovators SARL" . "</p>
-                        <p><strong>Adresse : </strong> " . "12 Rue des Entrepreneurs, 75015 Paris, France" . "</p>
-                        <p><strong>SIRET : </strong> " . "812 345 678 00012" . "</p>
-                    </div>
-                    <div class='right'>
-                        <p><strong>Date de facture:</strong> " . $invoice->getPurchasedDate()->format('Y-m-d') . "</p>
-                        <p><strong>Nom du client:</strong> " . $user->getName() . "</p>
-                        <p><strong>Adresse du client:</strong> " . $user->getAddress() . "</p>
-                    </div>
-                </div>
-        
-                <div class='invoice-body'>
-                    <table class='table'>
-                        <thead>
-                            <tr>
-                                <th>item</th>
-                                <th>Prix unitaire HT</th>
-                                <th>Quantité</th>
-                                <th>Montant HT</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            <tr>
-                                <td>20go</td>
-                                <td>" . "$16.00" . " €</td>
-                                <td>" . "1" . "</td>
-                                <td>" . "$16.00" . " €</td>
-                            </tr>
-                        </tbody>
-                    </table>
-        
-                    <p class='total'><strong>Total HT:</strong> " . "$16.00 HT" . " €</p>
-                    <p class='total'><strong>TVA (" . "20%" . "%):</strong> " . "20%" . " €</p>
-                    <p class='total total-amount'><strong>Total TTC:</strong> " . "$20.00 TTC" . " €</p>
-                </div>
-        
-            </div>
-        ";
-
-        $pdf->writeHTML($htmlContent);
-
-            // Define the invoices directory within the public directory
-            $invoicesDir = $this->getParameter('kernel.project_dir') . '/public/invoices';
-            if (!is_dir($invoicesDir)) {
-                mkdir($invoicesDir, 0775, true);
-            }
-    
-            $pdfFilePath = $invoicesDir . '/invoice_' . uniqid() . '.pdf';
-            $pdf->Output($pdfFilePath, 'F');
-    
-            $invoice->setPdf($pdfFilePath);
-    
-            $errors = $validator->validate($invoice);
-            if (count($errors) > 0) {
-                return new JsonResponse(['error' => (string) $errors], 400);
-            }
-    
-            $this->entityManager->persist($invoice);
-            $this->entityManager->flush();
-
-        return new JsonResponse(['message' => 'Invoice created successfully', 'invoice_id' => $invoice->getId()], 201);
-    }
-
-
     #[Route("/api/invoice/delete/{id}", name: 'invoice_delete', methods: ['DELETE'])]
     public function deleteInvoice($id): JsonResponse
     {
@@ -285,4 +133,149 @@ class InvoiceController extends AbstractController
         return new JsonResponse($pdfUrls, 200);
     }
 
+    #[Route("/api/invoice/create", name: 'invoice_create', methods: ['POST'])]
+    public function createInvoice(Request $request, ValidatorInterface $validator): JsonResponse
+    {
+        // Récupérer l'utilisateur actuellement connecté
+        /**
+        * @var User $user
+        */
+        $user = $this->getUser();
+ 
+        if (!$user) {
+            return new JsonResponse(['status' => 'KO', 'message' => 'User not found or not authenticated'], JsonResponse::HTTP_NOT_FOUND);
+        }
+ 
+        $invoice = new Invoice();
+        $invoice->setPurchasedDate(new \DateTime());
+        $invoice->setUser($user);
+ 
+        // Generate the PDF
+        $pdf = new TCPDF();
+        $pdf->AddPage();
+ 
+        
+        $htmlContent = "
+            <style>
+                body { font-family: Arial, sans-serif; }
+                h1 { color: #333; }
+                p { color: #666; line-height: 1.6; }
+                .invoice-template {
+                    width: 100%;
+                    padding: 20px;
+                    border: 1px solid #ddd;
+                    border-radius: 5px;
+                    background-color: #f9f9f9;
+                    box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+                }
+                .invoice-header {
+                    display: flex;
+                    justify-content: space-between;
+                    align-items: flex-start;
+                    margin-bottom: 20px;
+                }
+                .invoice-header .left {
+                    text-align: left;
+                }
+                .invoice-header .right {
+                    text-align: right;
+                    font-weight: bold;
+                }
+                .invoice-body {
+                    margin-bottom: 20px;
+                }
+                .invoice-footer {
+                    border-top: 1px solid #ddd;
+                    padding-top: 10px;
+                    text-align: center;
+                    color: #888;
+                }
+                .table {
+                    width: 100%;
+                    border-collapse: collapse;
+                    margin-bottom: 20px;
+                }
+                .table th, .table td {
+                    border: 1px solid #ddd;
+                    padding: 8px;
+                    text-align: left;
+                }
+                .table th {
+                    background-color: #f2f2f2;
+                }
+                .total {
+                    text-align: right;
+                }
+                .total-amount {
+                    font-weight: bold;
+                    font-size: 1.2em;
+                }
+            </style>
+        
+            <div class='invoice-template'>
+                <div class='invoice-header'>
+                    <div class='left'>
+                        <h1>FACTURE N° " . $invoice->getId() . "</h1>
+                        <p><strong>Nom de l'entreprise : </strong> " . "Tech Innovators SARL" . "</p>
+                        <p><strong>Adresse : </strong> " . "12 Rue des Entrepreneurs, 75015 Paris, France" . "</p>
+                        <p><strong>SIRET : </strong> " . "812 345 678 00012" . "</p>
+                    </div>
+                    <div class='right'>
+                        <p><strong>Date de facture:</strong> " . $invoice->getPurchasedDate()->format('Y-m-d') . "</p>
+                        <p><strong>Nom du client:</strong> " . $user->getName() . "</p>
+                        <p><strong>Adresse du client:</strong> " . $user->getAddress() . "</p>
+                    </div>
+                </div>
+        
+                <div class='invoice-body'>
+                    <table class='table'>
+                        <thead>
+                            <tr>
+                                <th>item</th>
+                                <th>Prix unitaire HT</th>
+                                <th>Quantité</th>
+                                <th>Montant HT</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>20go</td>
+                                <td>" . "$16.00" . " €</td>
+                                <td>" . "1" . "</td>
+                                <td>" . "$16.00" . " €</td>
+                            </tr>
+                        </tbody>
+                    </table>
+        
+                    <p class='total'><strong>Total HT:</strong> " . "$16.00 HT" . " €</p>
+                    <p class='total'><strong>TVA (" . "20%" . "%):</strong> " . "20%" . " €</p>
+                    <p class='total total-amount'><strong>Total TTC:</strong> " . "$20.00 TTC" . " €</p>
+                </div>
+        
+            </div>
+        ";
+ 
+        $pdf->writeHTML($htmlContent);
+ 
+            // Define the invoices directory within the public directory
+            $invoicesDir = $this->getParameter('kernel.project_dir') . '/invoices';
+            if (!is_dir($invoicesDir)) {
+                mkdir($invoicesDir, 0775, true);
+            }
+    
+            $pdfFilePath = $invoicesDir . '/invoice_' . uniqid() . '.pdf';
+            $pdf->Output($pdfFilePath, 'F');
+    
+            $invoice->setPdf($pdfFilePath);
+    
+            $errors = $validator->validate($invoice);
+            if (count($errors) > 0) {
+                return new JsonResponse(['error' => (string) $errors], 400);
+            }
+    
+            $this->entityManager->persist($invoice);
+            $this->entityManager->flush();
+ 
+        return new JsonResponse(['message' => 'Invoice created successfully', 'invoice_id' => $invoice->getId()], 201);
+    }
 }

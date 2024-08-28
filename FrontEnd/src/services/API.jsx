@@ -156,6 +156,7 @@ class Api {
 
     async updateUserProfile(token, data) {
         try {
+            // console.log('token', token);
             const response = await fetch(`${this.baseUrl}/user/update`, {
                 method: "PATCH",
                 headers: {
@@ -164,11 +165,19 @@ class Api {
                 },
                 body: JSON.stringify(data),
             });
-            if (response.status === 200) {
+            // console.log('response', response);
+            if (response.ok) {
                 const data = await response.json();
                 return data;
             } else {
-                throw new Error("Invalid token");
+                const errorData = await response.json();
+                if (errorData.errors) {
+                    // Si l'erreur est un tableau d'erreurs
+                    throw new Error(Object.values(errorData.errors).join(', '));
+                } else {
+                    // Si l'erreur est un message unique
+                    throw new Error(errorData.message || "Une erreur est survenue");
+                }
             }
         }
         catch (error) {
@@ -206,6 +215,7 @@ class Api {
                     Authorization: `Bearer ${token}`,
                 }
             });
+            console.log('response', response);
             if (response.status === 200) {
                 const data = await response.json();
                 return data;
@@ -433,8 +443,11 @@ class Api {
             throw error;
         }
     }
+}
+    /* END INVOICES ROUTES */
+
 
     /* END INVOICES ROUTES */
-}
+
 
 export default Api;

@@ -102,41 +102,6 @@ class AdminController extends AbstractController
         }
     }
 
-    // /**
-    //  * Route for getting allfiles
-    //  */
-    // #[Route('/api/admin/files', name: 'getFiles', methods: ['GET'])]
-    // public function getAllFiles(): Response
-    // {
-    //     /** @var User $user */
-    //     $user = $this->getUser();
-
-    //     if (!$user) {
-    //         return $this->json(['status' => 'KO', 'message' => 'User not found or not authenticated'], JsonResponse::HTTP_FORBIDDEN);
-    //     } elseif ($user->getRole() !== User::ROLE_ADMIN) {
-    //         return $this->json(['status' => 'KO', 'message' => 'User is not an admin'], JsonResponse::HTTP_FORBIDDEN);
-    //     }
-
-    //     try {
-    //         $files = $this->em->getRepository(File::class)->findAll();
-
-    //         $fileList = array_map(function ($file) {
-    //             return [
-    //                 'id' => $file->getId(),
-    //                 'name' => $file->getNameFile(),
-    //                 'format' => $file->getFormat(),
-    //                 'size' => $file->getWeight(),
-    //                 'user' => $file->getUser()->getName(),
-    //                 'uploadDate' => $file->getUploadDate()->format('Y-m-d'),
-    //             ];
-    //         }, $files);
-
-    //         return $this->json($fileList);
-    //     } catch (\Exception $e) {
-    //         return new JsonResponse(['status' => 'KO', 'message' => 'Files not found!'], JsonResponse::HTTP_NOT_FOUND);
-    //     }
-    // }
-
 
     /**
      * Route for creating a user
@@ -190,5 +155,4 @@ class AdminController extends AbstractController
             return new JsonResponse(['status' => 'KO', 'message' => 'User not created!', 'message2' => $e->getMessage()], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-
 }
