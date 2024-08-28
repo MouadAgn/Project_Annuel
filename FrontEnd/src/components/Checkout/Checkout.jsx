@@ -37,7 +37,8 @@ const CheckoutForm = ({ hidePaiement, isLoading, userName, setErrorMessage }) =>
         } else {
             if (result.paymentIntent.status === 'succeeded') {
                 const token = localStorage.getItem('token');
-                const data = await api.addStorage(token);
+                await api.addStorage(token);
+                await api.AddInvoice(token);
                 setErrorMessage('Paiement réussi !');
                 hidePaiement();
             }

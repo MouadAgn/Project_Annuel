@@ -4,6 +4,7 @@ import './Dashboard.css';
 import Api from '@services/API.jsx';
 import { Pie } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
+import SearchFilter from '../../components/SearchFilter/SearchFilter';  // Import du composant SearchFilter
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
@@ -13,9 +14,9 @@ export default function Dashboard() {
     const [totalStorageUsed, setTotalStorageUsed] = useState(0);
     const [totalStorageCapacity, setTotalStorageCapacity] = useState(0);
     const [files, setFiles] = useState([]);
+    const [filteredFiles, setFilteredFiles] = useState([]); // État pour les fichiers filtrés
     const [filesUploadedToday, setFilesUploadedToday] = useState(0);
     const [fileExtensionsData, setFileExtensionsData] = useState({});
-
 
     const api = new Api();
 
@@ -42,6 +43,7 @@ export default function Dashboard() {
                     }))
                 );
                 setFiles(allFiles);
+                setFilteredFiles(allFiles); // Initialisation des fichiers filtrés
 
                 // Calcul du nombre de fichiers uploadés aujourd'hui
                 const today = new Date().toISOString().split('T')[0];
@@ -63,6 +65,10 @@ export default function Dashboard() {
         };
         fetchData();
     }, []);
+
+    const handleFilteredFilesChange = (filteredFiles) => {
+        setFilteredFiles(filteredFiles);
+    };
 
     const data = {
         labels: ['Stockage Utilisé', 'Stockage Restant'],
@@ -141,14 +147,15 @@ export default function Dashboard() {
 
                     <div className="files-table-container">
                         <h2>Fichiers</h2>
-                        <h2>Nombre total de fichiers : {files.length}</h2>
+                        <h2>Nombre total de fichiers : {filteredFiles.length}</h2>
                         <h2>Nombre de fichiers uploadés aujourd'hui : {filesUploadedToday}</h2>
                         <div className="extensions-pie-chart">
                             <div className="pie-container">
                                 <Pie data={extensionsPieData} />
                             </div>
                         </div>
-                        {files.length > 0 ? (
+                        <SearchFilter onFilteredFilesChange={handleFilteredFilesChange} />  
+                        {filteredFiles.length > 0 ? (
                             <table className="files-table">
                                 <thead>
                                     <tr>
@@ -160,7 +167,7 @@ export default function Dashboard() {
                                     </tr>
                                 </thead>
                                 <tbody>
-                                    {files.map(file => (
+                                    {filteredFiles.map(file => (
                                         <tr key={file.id}>
                                             <td>{file.name}</td>
                                             <td>{file.format}</td>
