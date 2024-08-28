@@ -18,6 +18,9 @@ use Symfony\Component\PasswordHasher\Hasher\UserPasswordHasherInterface;
 use Symfony\Component\Mailer\MailerInterface;
 use Symfony\Component\Mime\Email;
 
+use Lexik\Bundle\JWTAuthenticationBundle\Services\JWTTokenManagerInterface;
+
+
 #[Route('/api/user', name: 'user_')]
 class UserController extends AbstractController
 {
@@ -25,13 +28,15 @@ class UserController extends AbstractController
     private $mailer;
     private $userStorageService;
     private $passwordHasher;
+    private $jwtManager;
 
-    public function __construct(EntityManagerInterface $em, MailerInterface $mailer, UserStorageService $userStorageService, UserPasswordHasherInterface $passwordHasher)
+    public function __construct(EntityManagerInterface $em, MailerInterface $mailer, UserStorageService $userStorageService, UserPasswordHasherInterface $passwordHasher, JWTTokenManagerInterface $jwtManager)
     {
         $this->em = $em;
         $this->mailer = $mailer;
         $this->userStorageService = $userStorageService;
         $this->passwordHasher = $passwordHasher;
+        $this->jwtManager = $jwtManager;
     }
 
     /**
@@ -245,9 +250,13 @@ class UserController extends AbstractController
             * @var User $user
             */
             $user->setStorageCapacity($user->getStorageCapacity() + 20000);
+            $user->setActivated(true);
 
             $this->em->persist($user);
             $this->em->flush();
+
+            // Générer un nouveau token JWT
+            $newToken = $this->jwtManager->create($user);
 
             // Send an email to the user to confirm the storage added
             // $email = (new Email())
@@ -257,7 +266,11 @@ class UserController extends AbstractController
             //     ->text('Vous avez bien ajouté 20Go d\'espace de stockage à votre compte !');
             // $this->mailer->send($email);
 
-            return new JsonResponse(['status' => 'OK', 'message' => 'Storage added']);
+            return new JsonResponse([
+                'status' => 'OK', 
+                'message' => 'Storage added',
+                'token' => $newToken
+            ]);
         } catch (\Exception $e) {
             return new JsonResponse(['status' => 'KO', 'message' => 'An error occurred: ' . $e->getMessage()], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
         }

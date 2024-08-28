@@ -63,7 +63,17 @@ const RegisterForm = ({ switchToLogin }) => {
                 setErrorMessage('Erreur lors de l\'inscription');
             }
         } catch (error) {
-            setErrorMessage('Une erreur est survenue lors de l\'inscription');
+            const errorData = JSON.parse(error.message);
+            if (errorData && typeof errorData === 'object') {
+                let errorMessages = '';
+                for (const [field, message] of Object.entries(errorData)) {
+                    errorMessages += `${field}: ${message}\n`;
+                }
+                setErrorMessage(errorMessages);
+            } else {
+                console.error(error);
+                setErrorMessage('Une erreur inattendue est survenue.');
+            }
         }
     };
 
@@ -155,7 +165,7 @@ const RegisterForm = ({ switchToLogin }) => {
                         />
                         <button type="submit" className="register-button">Inscription</button>
                     </form>
-                {errorMessage && <p className="error-message">{errorMessage}</p>}
+                    {errorMessage && <p className="error-message">{errorMessage.split('\n').map((msg, index) => <span key={index}>{msg}<br/></span>)}</p>}
                 <button onClick={() => switchToLogin()} className="login-button">
                     Déjà un compte ? Connexion
                 </button>

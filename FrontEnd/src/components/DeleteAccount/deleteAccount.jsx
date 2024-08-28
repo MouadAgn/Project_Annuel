@@ -21,18 +21,18 @@ export default function DeleteAccount() {
     };
 
     // Call API to delete user profile
-    const handleConfirm = () => {
-        const token = localStorage.getItem('token');
-        api.deleteUserProfile(token)
-            .then(() => {
+    const handleConfirm = async () => {
+        try {
+            const token = localStorage.getItem('token');
+            await api.deleteUserProfile(token)
                 localStorage.removeItem('token');
                 updateUser(null);
                 setErrorMessage('Votre compte a bien été supprimé');
                 navigate('/')
-            })
-            .catch((error) => {
-                setErrorMessage('Erreur lors de la suppression du compte', error);
-            });
+        } catch (error) {
+            setErrorMessage('Erreur lors de la suppression du compte', error);
+        }
+        
     };
 
     return (

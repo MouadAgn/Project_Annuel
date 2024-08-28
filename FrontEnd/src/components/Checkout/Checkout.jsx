@@ -1,6 +1,7 @@
-import React, { useState } from 'react';
+import React, { useContext, useState } from 'react';
 import { PaymentElement, useStripe, useElements } from '@stripe/react-stripe-js';
 import Api from '@services/Api';
+import AuthContext from '@services/Security'
 
 import './Checkout.css';
 
@@ -8,7 +9,8 @@ const CheckoutForm = ({ hidePaiement, isLoading, userName, setErrorMessage }) =>
     const stripe = useStripe();
     const elements = useElements();
     const [paymentStatus, setPaymentStatus] = useState('');
-
+    const { updateUser} = useContext(AuthContext);
+ 
     const api = new Api();
 
     // Handle payment
@@ -37,10 +39,20 @@ const CheckoutForm = ({ hidePaiement, isLoading, userName, setErrorMessage }) =>
         } else {
             if (result.paymentIntent.status === 'succeeded') {
                 const token = localStorage.getItem('token');
-                await api.addStorage(token);
+                const storageResponse = await api.addStorage(token);
                 await api.AddInvoice(token);
                 setErrorMessage('Paiement réussi !');
                 hidePaiement();
+
+                if (storageResponse.token) {
+                    localStorage.setItem('token', storageResponse.token);
+                }
+                // Update user data
+                const userProfile = await api.getUserProfile(storageResponse.token || token);
+                updateUser({
+                    ...userProfile,
+                    activated: true,
+                });
             }
         }
     };

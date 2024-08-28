@@ -216,8 +216,11 @@ class Api {
                 }
             });
             console.log('response', response);
-            if (response.status === 200) {
+            if (response.ok) {
                 const data = await response.json();
+                if (data.token) {
+                    localStorage.setItem('token', data.token);
+                }
                 return data;
             } else {
                 throw new Error("Invalid token");
