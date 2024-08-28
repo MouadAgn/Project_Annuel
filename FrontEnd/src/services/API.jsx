@@ -78,6 +78,26 @@ class Api {
             throw error;
         }
     }
+    async getAllFiles(token) {
+        try {
+            const response = await fetch(`${this.baseUrl}/admin/files`, {
+                method: "GET",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                }
+            });
+
+            if (response.status === 200) {
+                const data = await response.json();
+                return data;
+            } else {
+                throw new Error("Invalid token or error fetching invoices");
+            }
+        } catch (error) {
+            throw error;
+        }
+    }
 
     /* END ADMIN ROUTES */
 
@@ -383,6 +403,27 @@ class Api {
             });
 
             if (response.status === 200) {
+                const data = await response.json();
+                return data;
+            } else {
+                throw new Error("Invalid token or error fetching invoices");
+            }
+        } catch (error) {
+            throw error;
+        }
+    }
+
+    async AddInvoice(token) {
+        try {
+            const response = await fetch(`${this.baseUrl}/invoice/create`, {
+                method: "POST",
+                headers: {
+                    "Content-Type": "application/json",
+                    Authorization: `Bearer ${token}`,
+                }
+            });
+
+            if (response.status === 201) {
                 const data = await response.json();
                 return data;
             } else {

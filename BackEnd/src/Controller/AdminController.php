@@ -3,16 +3,14 @@
 namespace App\Controller;
 
 use App\Service\UserStorageService;
+use App\Entity\File;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
-
 use App\Entity\User;
-
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -36,23 +34,32 @@ class AdminController extends AbstractController
     {
         /** @var User $user */
         $user = $this->getUser();
-    
         if (!$user) {
             return $this->json(['status' => 'KO', 'message' => 'User not found or not authenticated'], status: JsonResponse::HTTP_FORBIDDEN);
         } else if ($user->getRole() !== User::ROLE_ADMIN) {
             return $this->json(['status' => 'KO', 'message' => 'User is not an admin'], status: JsonResponse::HTTP_FORBIDDEN);
         }
-
+ 
         try {
             $criteria = new Criteria();
             $criteria->where(Criteria::expr()->eq('role', User::ROLE_USER));
-
+ 
             $users = $this->em->getRepository(User::class)->matching($criteria);
-
+ 
             $filterUsers = $users->map(function ($user) {
                 $storageCapacityGB = $this->userStorageService->getUserStorageCapacityInGB($user);
                 $storageUsedGB = $this->userStorageService->calculateTotalStorageUsed($user);
-
+                // Récupérer les fichiers de l'utilisateur
+                $files = $user->getFiles()->map(function ($file) {
+                    return [
+                        'id' => $file->getId(),
+                        'name' => $file->getNameFile(),
+                        'uploadDate' => $file->getUploadDate()->format('Y-m-d H:i:s'),
+                        'weight' => $file->getWeight(),
+                        'format' => $file->getFormat()
+                    ];
+                });
+ 
                 return [
                     'id' => $user->getId(),
                     'name' => $user->getName(),
@@ -60,10 +67,12 @@ class AdminController extends AbstractController
                     'storageCapacity' => $storageCapacityGB,
                     'storageUsed' => $storageUsedGB,
                     'storageUsagePercentage' => $this->calculateStorageUsagePercentage($storageUsedGB, $storageCapacityGB),
-                    'createdDate' => $user->getCreatedDate()->format('Y-m-d')
+                    'createdDate' => $user->getCreatedDate()->format('Y-m-d'),
+                    'files' => $files->toArray()
                 ];
+                
             });
-
+        
             return $this->json($filterUsers);
         } catch (\Exception $e) {
             return new JsonResponse(['status' => 'KO', 'message' => 'Users not found!'], JsonResponse::HTTP_NOT_FOUND);
@@ -92,6 +101,42 @@ class AdminController extends AbstractController
             return new JsonResponse(['status' => 'KO', 'message' => 'User not found!'], JsonResponse::HTTP_NOT_FOUND);
         }
     }
+
+    // /**
+    //  * Route for getting allfiles
+    //  */
+    // #[Route('/api/admin/files', name: 'getFiles', methods: ['GET'])]
+    // public function getAllFiles(): Response
+    // {
+    //     /** @var User $user */
+    //     $user = $this->getUser();
+
+    //     if (!$user) {
+    //         return $this->json(['status' => 'KO', 'message' => 'User not found or not authenticated'], JsonResponse::HTTP_FORBIDDEN);
+    //     } elseif ($user->getRole() !== User::ROLE_ADMIN) {
+    //         return $this->json(['status' => 'KO', 'message' => 'User is not an admin'], JsonResponse::HTTP_FORBIDDEN);
+    //     }
+
+    //     try {
+    //         $files = $this->em->getRepository(File::class)->findAll();
+
+    //         $fileList = array_map(function ($file) {
+    //             return [
+    //                 'id' => $file->getId(),
+    //                 'name' => $file->getNameFile(),
+    //                 'format' => $file->getFormat(),
+    //                 'size' => $file->getWeight(),
+    //                 'user' => $file->getUser()->getName(),
+    //                 'uploadDate' => $file->getUploadDate()->format('Y-m-d'),
+    //             ];
+    //         }, $files);
+
+    //         return $this->json($fileList);
+    //     } catch (\Exception $e) {
+    //         return new JsonResponse(['status' => 'KO', 'message' => 'Files not found!'], JsonResponse::HTTP_NOT_FOUND);
+    //     }
+    // }
+
 
     /**
      * Route for creating a user

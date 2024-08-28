@@ -31,15 +31,19 @@ class InvoiceController extends AbstractController
     #[Route("/api/invoice/create", name: 'invoice_create', methods: ['POST'])]
     public function createInvoice(Request $request, ValidatorInterface $validator): JsonResponse
     {
-        $data = json_decode($request->getContent(), true);
+        // Récupérer l'utilisateur actuellement connecté
+        /**
+        * @var User $user
+        */
+        $user = $this->getUser();
 
-        if (empty($data['id'])) {
-            return new JsonResponse(['error' => 'Invalid data'], 400);
+        if (!$user) {
+            return new JsonResponse(['status' => 'KO', 'message' => 'User not found or not authenticated'], JsonResponse::HTTP_NOT_FOUND);
         }
 
-        $user = $this->entityManager->getRepository(User::class)->find($data['id']);
-        if (!$user) {
-            return new JsonResponse(['error' => 'User not found'], 404);
+        // Vérifiez que l'utilisateur est bien une instance de votre classe User
+        if (!$user instanceof User) {
+            return new JsonResponse(['error' => 'Invalid user type'], 500);
         }
 
         $invoice = new Invoice();
@@ -154,7 +158,7 @@ class InvoiceController extends AbstractController
         $pdf->writeHTML($htmlContent);
 
             // Define the invoices directory within the public directory
-            $invoicesDir = $this->getParameter('kernel.project_dir') . '/invoices';
+            $invoicesDir = $this->getParameter('kernel.project_dir') . '/public/invoices';
             if (!is_dir($invoicesDir)) {
                 mkdir($invoicesDir, 0775, true);
             }
