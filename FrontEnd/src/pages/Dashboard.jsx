@@ -16,6 +16,7 @@ export default function Dashboard() {
 
     useEffect(() => {
         const fetchData = async () => {
+            const token = localStorage.getItem('token');
             try {
                 const token = localStorage.getItem('token');
                 const userResponse = await api.getAllUsers(token);
