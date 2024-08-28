@@ -52,6 +52,15 @@
 }
 
 
+/* Example styles for drag and drop */
+.folder-drop-target {
+  border: 2px dashed #00bfff;
+  background-color: #f0f8ff;
+}
+
+.files-table tr.dragging {
+  opacity: 0.5;
+}
 
 
 .folder-item:hover {
@@ -71,7 +80,7 @@
 .folder-file-count {
   color: #6c757d;
   margin-right: 1rem; /* Space between file count and delete button */
-  margin-top: 10px;
+  margin-bottom: 1px;
 }
 
 .delete-folder-button {

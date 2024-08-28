@@ -14,6 +14,8 @@ use Symfony\Component\Finder\Finder;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\File;
+use App\Entity\User;
+
 use Psr\Log\LoggerInterface;
 
 
@@ -25,13 +27,23 @@ class FileController extends AbstractController
     {
         $this->security = $security;
     }
+   
 
-    /**
-     * Route pour l'ajout de fichier, méthode POST
-     */
-    #[Route('/api/add-file', name: 'add_file', methods: ['POST'])]
-public function addFile(Request $request, SluggerInterface $slugger, EntityManagerInterface $entityManager, LoggerInterface $logger): Response
-{
+/**
+* Route pour l'ajout de fichier, méthode POST
+*/
+
+  #[Route('/api/user/add-file', name: 'add_file', methods: ['POST'])]
+    public function addFile(Request $request, SluggerInterface $slugger, EntityManagerInterface $entityManager, LoggerInterface $logger): JsonResponse
+    {
+        
+    // Vérifie si l'utilisateur est connecté
+    /** @var User $user */
+    $user = $this->getUser();
+    if (!$user) {
+        return new JsonResponse(['status' => 'KO', 'message' => 'User not found or not authenticated'], status: JsonResponse::HTTP_FORBIDDEN);
+    }
+
     $uploadedFile = $request->files->get('file');
 
     if (!$uploadedFile || $uploadedFile->getError() !== UPLOAD_ERR_OK) {
@@ -89,7 +101,8 @@ public function addFile(Request $request, SluggerInterface $slugger, EntityManag
         $file->setUploadDate(new \DateTime());
         $file->setFormat($uploadedFile->guessExtension());
         $file->setPath($uploadPath);
-        $file->setUser(null);
+        // Associer l'utilisateur connecté au fichier
+        $file->setUser($user);
 
         // Persist l'entité File
         $logger->info('Attempting to persist file entity');

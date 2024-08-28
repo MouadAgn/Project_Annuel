@@ -1,0 +1,106 @@
+.dashboard-app {
+    display: flex;
+    height: 100vh;
+    background-color: #f5f7fa;
+}
+
+.main-content {
+    flex-grow: 1;
+    overflow-y: auto;
+}
+
+.content-container {
+    padding: 40px 20px 20px;
+    max-width: calc(100% - 40px);
+    margin: 20px 30px;
+}
+
+.users-table-container {
+    margin-top: 20px;
+    background-color: white;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    border-radius: 4px;
+}
+
+.users-table {
+    width: 100%;
+    border-collapse: collapse;
+}
+
+.users-table th, .users-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ecf0f1;
+}
+
+.users-table th {
+    background-color: #f8f9fa;
+    font-weight: bold;
+}
+
+.users-table td {
+    vertical-align: middle;
+}
+
+.error {
+    color: red;
+    font-weight: bold;
+    margin-top: 20px;
+}
+.storage-pie-chart {
+    margin-bottom: 20px;
+    background-color: white;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+    text-align: center;
+}
+
+.pie-container {
+    width: 250px;  /* Réduction de la taille du graphique */
+    margin: 0 auto;
+}
+.files-table-container {
+    margin-top: 40px;
+    background-color: white;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+}
+
+.files-table {
+    width: 100%;
+    border-collapse: collapse;
+    background-color: white;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+}
+
+.files-table th, .files-table td {
+    padding: 12px;
+    text-align: left;
+    border-bottom: 1px solid #ecf0f1;
+}
+
+.files-table th {
+    background-color: #f8f9fa;
+    font-weight: bold;
+}
+
+.files-table td {
+    vertical-align: middle;
+}
+.extensions-pie-chart {
+    margin-top: 20px;
+    background-color: white;
+    padding: 20px;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+    border-radius: 4px;
+    text-align: center;
+}
+
+.pie-container {
+    width: 250px;
+    margin: 0 auto;
+}
+

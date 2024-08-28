@@ -1,7 +1,7 @@
 import { Routes, Route, Navigate } from 'react-router-dom'
 import { useLocation } from 'react-router-dom'
 
-import Dashboard from '@pages/Dashboard'
+import Dashboard from '@pages/Dashboard/Dashboard'
 import Profile from '@pages/profile/profile'
 import Logout from '@components/logout'
 import Login from '@pages/LoginRegister'
@@ -10,13 +10,10 @@ import ListFile from '@pages/ListFile/ListFile'
 import FolderCreation from '@pages/FolderCreation'
 import ListFolders from '@pages/ListFolder/ListFolder'
 import DeleteFolders from '@pages/DeleteFolder'
-import AddFileToFolder from '@pages/AddFileToFolder/AddFileToFolder'
 import FilesInFolder from '@pages/FolderFileList/FolderFileList'
 import Home from '@pages/Home/Home'
 import SideBar from '@components/SideBar/SideBar'
 import InvoicesPage from '@pages/Invoices/invoices'; 
-
-
 import AuthContext, { AuthProvider } from '@services/Security';
 import React, { useContext } from 'react';
 
@@ -70,6 +67,7 @@ function App() {
                 <Route path="/addFile" element={<ProtectedRoute element={AddFile} roles={["ROLE_USER"]} />} />
                 <Route path="/dashboard" element={<ProtectedRoute element={Dashboard} roles={["ROLE_ADMIN"]} />} />
                 <Route path="/home" element={<ProtectedRoute element={Home} roles={["ROLE_USER", "ROLE_ADMIN"]} />} />
+                <Route path="/invoices" element={<ProtectedRoute element={InvoicesPage} roles={["ROLE_USER"]} />} />
                 <Route path="/profile" element={
                 <ProtectedRoute 
                     element={() => (
@@ -83,17 +81,21 @@ function App() {
                 />
                 } />
                 <Route path="/invoices" element={
-                    <ProtectedRoute role={["ROLE_USER"]}>
-                        <div className="principal-container">
-                            <SideBar />
-                            <InvoicesPage />
-                        </div>
-                    </ProtectedRoute>
+                    <ProtectedRoute 
+                        element={() => (
+                            <div className="principal-container">                                
+                                    <SideBar />
+                                    <Invoices />
+                            </div>
+                        )}
+                        roles={["ROLE_USER"]}
+                        requireActivation={true}
+                    />
                 } />
                 <Route path="/folderCreation" element={<ProtectedRoute element={FolderCreation} roles={["ROLE_USER"]} />} />
                 <Route path="/listFolder" element={<ProtectedRoute element={ListFolders} roles={["ROLE_USER"]} />} />
                 <Route path="/DeleteFolder" element={<ProtectedRoute element={DeleteFolders} roles={["ROLE_USER"]} />} />
-                <Route path="/addFileToFolder" element={<ProtectedRoute element={AddFileToFolder} roles={["ROLE_USER"]} />} />
+               
                 <Route path="/filesInFolder" element={<ProtectedRoute element={FilesInFolder} roles={["ROLE_USER"]} />} />
                 <Route path="*" element={<Navigate to="/" />} />
             </Routes>

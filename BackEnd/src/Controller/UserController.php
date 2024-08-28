@@ -220,7 +220,6 @@ class UserController extends AbstractController
             
             $this->em->persist($invoice);
             $this->em->flush();
-            // $user->addInvoice($invoice);
 
             $this->em->persist($user);
             $this->em->flush();

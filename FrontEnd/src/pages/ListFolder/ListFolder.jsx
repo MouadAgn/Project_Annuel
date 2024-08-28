@@ -1,6 +1,8 @@
-import  { useState, useEffect } from 'react';
-import axios from 'axios';
-import './ListFolder.css'; // Add a CSS file for styling
+import React, { useState, useEffect } from 'react';
+import './ListFolder.css';
+import Api from '../../services/API';
+
+const api = new Api();
 
 const ListFolders = () => {
   const [folders, setFolders] = useState([]);
@@ -9,10 +11,10 @@ const ListFolders = () => {
   useEffect(() => {
     const fetchFolders = async () => {
       try {
-        const response = await axios.get('https://127.0.0.1:8000/api/folders');
-        setFolders(response.data);
+        const fetchedFolders = await api.getFolders();
+        setFolders(fetchedFolders);
       } catch (err) {
-        setError(err.response?.data?.error || 'An error occurred while loading folders');
+        setError('An error occurred while loading folders');
       }
     };
 
@@ -29,7 +31,6 @@ const ListFolders = () => {
 
   return (
     <div className="folders-list">
-      
       <ul>
         {folders.map((folder) => (
           <li key={folder.id}>

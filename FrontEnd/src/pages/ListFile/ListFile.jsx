@@ -1,11 +1,29 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Download, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import Swal from 'sweetalert2';
 import './ListFile.css';
+import Api from '../../services/API';
 
-const ListFile = ({ files }) => {
+const api = new Api();
+
+const ListFile = () => {
+    const [files, setFiles] = useState([]);
     const [currentPage, setCurrentPage] = useState(1);
     const [filesPerPage] = useState(4);
+
+    useEffect(() => {
+        fetchFiles();
+    }, []);
+
+    const fetchFiles = async () => {
+        try {
+            const fetchedFiles = await api.getFiles();
+            setFiles(fetchedFiles);
+        } catch (error) {
+            console.error('Error fetching files:', error);
+            Swal.fire('Erreur!', 'Une erreur est survenue lors du chargement des fichiers.', 'error');
+        }
+    };
 
     const handleDelete = (filename) => {
         Swal.fire({
@@ -24,29 +42,15 @@ const ListFile = ({ files }) => {
         });
     };
 
-    const deleteFile = (filename) => {
-        fetch(`https://127.0.0.1:8000/api/delete-file/${filename}`, {
-            method: 'DELETE'
-        })
-        .then(response => {
-            if (!response.ok) {
-                throw new Error('Error deleting the file');
-            }
-            Swal.fire(
-                'Supprimé!',
-                `Le fichier ${filename} a été supprimé.`,
-                'success'
-            );
-            // You might want to trigger a re-fetch of files in the parent component here
-        })
-        .catch(error => {
+    const deleteFile = async (filename) => {
+        try {
+            await api.deleteFile(filename);
+            Swal.fire('Supprimé!', `Le fichier ${filename} a été supprimé.`, 'success');
+            fetchFiles(); // Refresh the file list
+        } catch (error) {
             console.error('Error deleting the file:', error);
-            Swal.fire(
-                'Erreur!',
-                'Une erreur est survenue lors de la suppression du fichier.',
-                'error'
-            );
-        });
+            Swal.fire('Erreur!', 'Une erreur est survenue lors de la suppression du fichier.', 'error');
+        }
     };
 
     const handleDownload = (filename) => {
@@ -84,8 +88,8 @@ const ListFile = ({ files }) => {
                             key={index}
                             draggable
                             onDragStart={(e) => {
-                                console.log(`File drag started: ${file.id}`);
-                                e.dataTransfer.setData('fileId', file.id);
+                                console.log(`File drag started: ${file.file_id}`);
+                                e.dataTransfer.setData('fileId', file.file_id);
                             }}
                         >
                             <td>{getFileName(file.name_file)}</td>

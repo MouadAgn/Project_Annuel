@@ -1,10 +1,12 @@
-import { useState, useEffect } from 'react';
-import axios from 'axios';
+import React, { useState, useEffect } from 'react';
 import { Download, Trash2, ChevronLeft, ChevronRight } from 'lucide-react';
 import Modal from './Modal';
 import './FolderFileList.css';
-import '../ListFile/ListFile.css';
+import '../ListFile/ListFile';
 import Swal from 'sweetalert2';
+import Api from '../../services/API'; // Assume this is the file containing the API methods
+
+const api = new Api();
 
 const FolderFileList = () => {
   const [folders, setFolders] = useState([]);
@@ -13,24 +15,25 @@ const FolderFileList = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const [filesPerPage] = useState(3);
   const [error, setError] = useState('');
+  const [draggingFile, setDraggingFile] = useState(null);
 
   useEffect(() => {
-    const fetchFolders = async () => {
-      try {
-        const response = await axios.get('https://127.0.0.1:8000/api/folders');
-        setFolders(response.data);
-      } catch (err) {
-        setError('An error occurred while loading folders');
-      }
-    };
-
     fetchFolders();
   }, []);
 
+  const fetchFolders = async () => {
+    try {
+      const response = await api.getFolders();
+      setFolders(response);
+    } catch (err) {
+      setError('An error occurred while loading folders');
+    }
+  };
+
   const handleFolderClick = async (folderId) => {
     try {
-      const response = await axios.get(`https://127.0.0.1:8000/api/folders/${folderId}/files`);
-      setFiles(response.data);
+      const response = await api.getFolderFiles(folderId);
+      setFiles(response);
       setSelectedFolder(folderId);
       setCurrentPage(1);
     } catch (error) {
@@ -46,24 +49,18 @@ const FolderFileList = () => {
 
   const handleDelete = async (fileId) => {
     try {
-      // Envoyer la requête DELETE à l'API
-      await axios.delete(`https://127.0.0.1:8000/api/folders/${selectedFolder}/files`, {
-        data: { fileId: fileId }
-      });
-    
-      // Mettre à jour l'état local en supprimant le fichier de la liste
-      setFiles(files.filter(file => file.id !== fileId));
-  
-      // Notifier l'utilisateur du succès
-      Swal.fire('Supprimé !', 'Le fichier a été retiré du dossier.', 'success');
+      await api.deleteFileFromFolder(selectedFolder, fileId);
+      setFiles(files.filter(file => file.file_id !== fileId));
+      Swal.fire('Deleted!', 'The file has been removed from the folder.', 'success');
+      handleFolderClick(selectedFolder);
+      fetchFolders();
     } catch (error) {
-      console.error('Erreur lors de la suppression du fichier:', error);
-      Swal.fire('Erreur !', 'Une erreur est survenue lors de la suppression du fichier.', 'error');
+      console.error('Error deleting file:', error);
+      Swal.fire('Error!', 'An error occurred while deleting the file.', 'error');
     }
   };
 
   const handleDownload = (fileName, fileUrl) => {
-    // Création d'un lien temporaire pour le téléchargement
     const link = document.createElement('a');
     link.href = fileUrl;
     link.setAttribute('download', fileName);
@@ -74,22 +71,23 @@ const FolderFileList = () => {
 
   const handleFolderDelete = async (folderId) => {
     const result = await Swal.fire({
-      title: 'Are you sure?',
-      text: "This folder and all its files will be deleted!",
+      title: 'Êtes-vous sûr ?',
+      text: "Ce dossier et tous ses fichiers seront supprimés définitivement !",
       icon: 'warning',
       showCancelButton: true,
-      confirmButtonText: 'Yes, delete it!',
-      cancelButtonText: 'No, keep it',
+      confirmButtonText: 'Oui, supprimez-le !',
+      cancelButtonText: 'Non, gardez-le',
     });
 
     if (result.isConfirmed) {
       try {
-        await axios.delete(`https://127.0.0.1:8000/api/folders/${folderId}`);
+        await api.deleteFolder(folderId);
         setFolders(folders.filter(folder => folder.id !== folderId));
         closeModal();
-        Swal.fire('Deleted!', 'Your folder has been deleted.', 'success');
+        Swal.fire('Supprimé', 'Votre dossier et tous ses fichiers ont été supprimés.', 'success');
+        fetchFolders();
       } catch (err) {
-        Swal.fire('Error!', 'An error occurred while deleting the folder.', 'error');
+        Swal.fire('Erreur!', 'Une erreur est survenue lors de la suppression du dossier.', 'error');
       }
     }
   };
@@ -118,6 +116,34 @@ const FolderFileList = () => {
     }
   };
 
+  const handleDragStart = (e, file) => {
+    e.dataTransfer.setData('fileId', file.file_id.toString());
+    setDraggingFile(file);
+  };
+
+  const handleDrop = async (e, folderId) => {
+    e.preventDefault();
+    const fileId = e.dataTransfer.getData('fileId');
+    if (!fileId) {
+      Swal.fire('Erreur!', 'Aucun fichier détecté lors du dépôt.', 'error');
+      return;
+    }
+    try {
+      await api.addFileToFolder(folderId, fileId);
+      setDraggingFile(null);
+
+      fetchFolders();
+      if (folderId === selectedFolder) {
+        handleFolderClick(folderId);
+      }
+
+      Swal.fire('Success!', 'Fichier ajouté avec succès.', 'success');
+    } catch (error) {
+      console.error('Error adding file to folder:', error);
+      Swal.fire('Error!', 'An error occurred while adding the file to the folder.', 'error');
+    }
+  };
+
   if (error) {
     return <div className="error-message">{error}</div>;
   }
@@ -126,14 +152,19 @@ const FolderFileList = () => {
     <div className="folders-list">
       <ul>
         {folders.map(folder => (
-          <li key={folder.id} onClick={() => handleFolderClick(folder.id)}>
+          <li 
+            key={folder.id} 
+            onClick={() => handleFolderClick(folder.id)}
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={(e) => handleDrop(e, folder.id)}
+          >
             <span className="folder-icon">📁</span>
             <span className="folder-name">{folder.name}</span>
             <span className="folder-file-count">{folder.fileCount} files</span>
             <button 
               className="delete-folder-button"
               onClick={(e) => {
-                e.stopPropagation(); // Prevents triggering folder click event
+                e.stopPropagation();
                 handleFolderDelete(folder.id);
               }}
             >
@@ -144,22 +175,26 @@ const FolderFileList = () => {
       </ul>
 
       {selectedFolder && (
-        <Modal isOpen={!!selectedFolder} onClose={closeModal}>
+        <Modal className="modal" isOpen={!!selectedFolder} onClose={closeModal}>
           <h3>Files in {folders.find(folder => folder.id === selectedFolder)?.name}</h3>
           <div className="files-table-container">
             <table className="files-table">
               <thead>
                 <tr>
-                  <th>Nom</th>
-                  <th>Taille</th>
+                  <th>Name</th>
+                  <th>Size</th>
                   <th>Extension</th>
-                  <th>Date D Upload</th>
+                  <th>Upload Date</th>
                   <th>Actions</th>
                 </tr>
               </thead>
               <tbody>
                 {currentFiles.map((file) => (
-                  <tr key={file.id}>
+                  <tr 
+                    key={file.file_id}
+                    draggable
+                    onDragStart={(e) => handleDragStart(e, file)}
+                  >
                     <td>
                       <a 
                         href={`http://127.0.0.1:8000/uploads/${file.name}`} 
@@ -200,7 +235,7 @@ const FolderFileList = () => {
               <ChevronLeft size={16} />
             </button>
             {Array.from({ length: totalPages }, (_, i) => (
-              <button 
+              <button
                 key={i + 1} 
                 onClick={() => paginate(i + 1)} 
                 className={`pagination-button ${currentPage === i + 1 ? 'active' : ''}`}
@@ -211,7 +246,7 @@ const FolderFileList = () => {
             <button 
               className="pagination-arrow" 
               onClick={goToNextPage} 
-              disab led={currentPage === totalPages}
+              disabled={currentPage === totalPages}
             >
               <ChevronRight size={16} />
             </button>
