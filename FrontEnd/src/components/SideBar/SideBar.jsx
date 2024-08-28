@@ -11,6 +11,7 @@ const SideBar = () => {
           <li><a href="/profile"><UserRoundPen size={20} /><span>Profile</span></a></li>
           <li><a href="/invoices"><FileCheck2 size={20} /><span>Mes Factures</span></a></li>
           <li><a href="/logout"><LogOut size={20} /><span>Déconnexion</span></a></li>
+          <li><a href="/dashboard"><LogOut size={20} /><span>Dashboard</span></a></li>
         </ul>
       </nav>
     </aside>

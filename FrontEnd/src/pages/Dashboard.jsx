@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 // import { useNavigate } from 'react-router-dom';
 
 
-import ResearchFilter from '@components/ResearchFilter/ResearchFilter.jsx'
+// import ResearchFilter from '@components/ResearchFilter/ResearchFilter.jsx'
 import Api from '@services/API.jsx';
 
 

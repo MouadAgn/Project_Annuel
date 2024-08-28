@@ -10,7 +10,6 @@ import ListFile from '@pages/ListFile/ListFile'
 import FolderCreation from '@pages/FolderCreation'
 import ListFolders from '@pages/ListFolder/ListFolder'
 import DeleteFolders from '@pages/DeleteFolder'
-import AddFileToFolder from '@pages/AddFileToFolder/AddFileToFolder'
 import FilesInFolder from '@pages/FolderFileList/FolderFileList'
 import Home from '@pages/Home/Home'
 import SideBar from '@components/SideBar/SideBar'
@@ -83,7 +82,7 @@ function App() {
                 <Route path="/folderCreation" element={<ProtectedRoute element={FolderCreation} roles={["ROLE_USER"]} />} />
                 <Route path="/listFolder" element={<ProtectedRoute element={ListFolders} roles={["ROLE_USER"]} />} />
                 <Route path="/DeleteFolder" element={<ProtectedRoute element={DeleteFolders} roles={["ROLE_USER"]} />} />
-                <Route path="/addFileToFolder" element={<ProtectedRoute element={AddFileToFolder} roles={["ROLE_USER"]} />} />
+               
                 <Route path="/filesInFolder" element={<ProtectedRoute element={FilesInFolder} roles={["ROLE_USER"]} />} />
                 <Route path="*" element={<Navigate to="/" />} />
             </Routes>
