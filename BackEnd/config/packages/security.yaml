@@ -41,6 +41,7 @@ security:
     - { path: ^/api/register, roles: PUBLIC_ACCESS }
     - { path: ^/api/admin, roles: ROLE_ADMIN }
     - { path: ^/api/user, roles: [ROLE_USER, ROLE_ADMIN] }
+    - { path: ^/api/invoice, roles: [ROLE_USER, ROLE_ADMIN] }
 
 when@test:
     security:

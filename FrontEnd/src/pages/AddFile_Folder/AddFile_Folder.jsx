@@ -49,8 +49,15 @@ const AddFile_Folder = () => {
         formData.append('file', selectedFile);
     
         const xhr = new XMLHttpRequest();
-        xhr.open('POST', 'https://127.0.0.1:8000/api/add-file', true);
+        xhr.open('POST', 'https://127.0.0.1:8000/api/user/add-file', true);
     
+        const token = localStorage.getItem('token');
+        if (token) {
+            xhr.setRequestHeader('Authorization', `Bearer ${token}`);
+        } else {
+            Swal.fire('Erreur', 'Vous devez être connecté pour uploader un fichier', 'error');
+            return;
+        }
         xhr.upload.onprogress = (event) => {
             if (event.lengthComputable) {
                 const percentComplete = (event.loaded / event.total) * 100;
@@ -59,22 +66,32 @@ const AddFile_Folder = () => {
         };
     
         xhr.onload = () => {
+            console.log(xhr)
             if (xhr.status === 200) {
                 Swal.fire('Succès', 'Fichier uploadé avec succès', 'success');
                 closeFileModal();
-                
             } else {
-                Swal.fire('Erreur', 'Erreur lors de l\'upload du fichier', 'error');
+                let errorMessage = 'Erreur lors de l\'upload du fichier';
+                try {
+                    const errorData = JSON.parse(xhr.responseText);
+                    if (errorData.error) {
+                        errorMessage = errorData.error;
+                    } else if (errorData.message) {
+                        errorMessage = errorData.message;
+                    }
+                } catch (e) {
+                    console.error('Erreur lors de l\'analyse de la réponse d\'erreur:');
+                }
+                Swal.fire('Erreur', errorMessage, 'error');
             }
         };
     
         xhr.onerror = () => {
             Swal.fire('Erreur', 'Erreur de réseau', 'error');
         };
-    
+        
         xhr.send(formData);
-    };
-    
+};
 
     const handleFolderSubmit = async (event) => {
         event.preventDefault();

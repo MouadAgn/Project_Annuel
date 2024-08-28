@@ -10,9 +10,12 @@ use App\Entity\User as UserEntity;
 use App\Entity\Invoice as InvoiceEntity;
 use App\Entity\File as FileEntity;
 
+// use Symfony\Component\DependencyInjection\Attribute\AsTaggedItem;
+
 
 use Faker\Factory;
 
+// #[AsTaggedItem('doctrine.fixture.orm')]
 class User extends Fixture
 {
     private $passwordHasher;

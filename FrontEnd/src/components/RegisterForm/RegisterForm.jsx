@@ -8,7 +8,6 @@ import {
     cleanInput } from '@services/AuthentificationChecking';
     
 import './RegisterForm.css';
-// const stripePromise = loadStripe(import.meta.env.VITE_STRIPE_PUBLIC_KEY);
 
 const RegisterForm = ({ switchToLogin }) => {
     const api = new Api();

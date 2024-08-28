@@ -12,6 +12,7 @@ use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
 
 use App\Entity\User;
+// use App\Entity\File;
 
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\EntityManagerInterface;
@@ -52,6 +53,16 @@ class AdminController extends AbstractController
             $filterUsers = $users->map(function ($user) {
                 $storageCapacityGB = $this->userStorageService->getUserStorageCapacityInGB($user);
                 $storageUsedGB = $this->userStorageService->calculateTotalStorageUsed($user);
+            
+                // Récupérer les fichiers de l'utilisateur
+                $files = $user->getFiles()->map(function ($file) {
+                    return [
+                        'id' => $file->getId(),
+                        'name' => $file->getNameFile(),
+                        'uploadDate' => $file->getUploadDate()->format('Y-m-d H:i:s'),
+                        'weight' => $file->getWeight()
+                    ];
+                });
 
                 return [
                     'id' => $user->getId(),
@@ -60,8 +71,8 @@ class AdminController extends AbstractController
                     'storageCapacity' => $storageCapacityGB,
                     'storageUsed' => $storageUsedGB,
                     'storageUsagePercentage' => $this->calculateStorageUsagePercentage($storageUsedGB, $storageCapacityGB),
-                    'createdDate' => $user->getCreatedDate()->format('Y-m-d')
-                    // 'role' => $user->getRole()
+                    'createdDate' => $user->getCreatedDate()->format('Y-m-d'),
+                    'files' => $files->toArray()
                 ];
             });
 
@@ -146,5 +157,4 @@ class AdminController extends AbstractController
             return new JsonResponse(['status' => 'KO', 'message' => 'User not created!', 'message2' => $e->getMessage()], JsonResponse::HTTP_INTERNAL_SERVER_ERROR);
         }
     }
-
 }

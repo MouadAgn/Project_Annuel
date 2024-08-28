@@ -83,12 +83,16 @@ function App() {
                 />
                 } />
                 <Route path="/invoices" element={
-                    <ProtectedRoute role={["ROLE_USER"]}>
-                        <div className="principal-container">
-                            <SideBar />
-                            <InvoicesPage />
-                        </div>
-                    </ProtectedRoute>
+                    <ProtectedRoute 
+                        element={() => (
+                            <div className="principal-container">                                
+                                    <SideBar />
+                                    <Invoices />
+                            </div>
+                        )}
+                        roles={["ROLE_USER"]}
+                        requireActivation={true}
+                    />
                 } />
                 <Route path="/folderCreation" element={<ProtectedRoute element={FolderCreation} roles={["ROLE_USER"]} />} />
                 <Route path="/listFolder" element={<ProtectedRoute element={ListFolders} roles={["ROLE_USER"]} />} />

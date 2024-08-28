@@ -8,6 +8,7 @@
 
 .sidebar:hover {
     width: 240px;
+    padding-right: 2%;
 }
 
 .sidebar nav ul {
@@ -17,7 +18,7 @@
 }
 
 .sidebar nav ul li {
-    margin-bottom: 10px;    
+    margin-bottom: 10px;
 }
 
 .sidebar nav ul li a {

@@ -16,6 +16,8 @@ use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\File;
 use Psr\Log\LoggerInterface;
 
+use App\Entity\User;
+
 
 class FileController extends AbstractController
 {
@@ -29,9 +31,17 @@ class FileController extends AbstractController
     /**
      * Route pour l'ajout de fichier, méthode POST
      */
-    #[Route('/api/add-file', name: 'add_file', methods: ['POST'])]
-public function addFile(Request $request, SluggerInterface $slugger, EntityManagerInterface $entityManager, LoggerInterface $logger): Response
-{
+    #[Route('/api/user/add-file', name: 'add_file', methods: ['POST'])]
+    public function addFile(Request $request, SluggerInterface $slugger, EntityManagerInterface $entityManager, LoggerInterface $logger): JsonResponse
+    {
+        
+    // Vérifie si l'utilisateur est connecté
+    /** @var User $user */
+    $user = $this->getUser();
+    if (!$user) {
+        return new JsonResponse(['status' => 'KO', 'message' => 'User not found or not authenticated'], status: JsonResponse::HTTP_FORBIDDEN);
+    }
+
     $uploadedFile = $request->files->get('file');
 
     if (!$uploadedFile || $uploadedFile->getError() !== UPLOAD_ERR_OK) {
@@ -117,7 +127,6 @@ public function addFile(Request $request, SluggerInterface $slugger, EntityManag
         return new JsonResponse(['error' => 'Erreur lors de l\'upload ou de l\'enregistrement en base de données: '.$e->getMessage()], 500);
     }
 }
-
 
 
 /**

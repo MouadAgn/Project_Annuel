@@ -9,6 +9,7 @@ use Doctrine\Common\Collections\ArrayCollection;
 
 use Symfony\Component\Serializer\Annotation\Groups;
 use Symfony\Bridge\Doctrine\Validator\Constraints\UniqueEntity;
+use Symfony\Component\Validator\Constraints as Assert;
 
 use Symfony\Component\Security\Core\User\PasswordAuthenticatedUserInterface;
 use Symfony\Component\Security\Core\User\UserInterface;
@@ -24,32 +25,40 @@ class User implements PasswordAuthenticatedUserInterface, UserInterface
 
     #[Groups(['user'])]
     #[ORM\Column(length: 50)]
+    #[Assert\NotBlank]
     private ?string $name = null;
 
     #[Groups(['user'])]
     #[ORM\Column(length: 50)]
+    #[Assert\NotBlank]
     private ?string $firstName = null;
 
     #[ORM\Column(length: 255)]
+    #[Assert\NotBlank]
     private ?string $password = null;
 
     #[Groups(['user'])]
+    #[Assert\NotBlank]
     #[ORM\Column(length: 100, unique: true)]
     private ?string $mail = null;
 
     #[Groups(['user'])]
+    #[Assert\NotBlank]
     #[ORM\Column(length: 150, nullable: true)]
     private ?string $address = null;
 
     #[Groups(['user'])]
+    #[Assert\NotBlank]
     #[ORM\Column(nullable: true)]
     private ?int $zipCode = null;
 
     #[Groups(['user'])]
+    #[Assert\NotBlank]
     #[ORM\Column(length: 100, nullable: true)]
     private ?string $city = null;
 
     #[Groups(['user'])]
+    #[Assert\NotBlank]
     #[ORM\Column(length: 100, nullable: true)]
     private ?string $country = null;
     

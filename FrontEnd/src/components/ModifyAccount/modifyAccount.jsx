@@ -1,19 +1,21 @@
 import React, { useState } from 'react';
 import Api from '@services/Api.jsx';
+import { validatePassword, cleanInput, cleanMail } from '@services/AuthentificationChecking';
 
 import './ModifyAccount.css';
 
 export default function ModifyProfile({ userData, onUpdateSuccess, onCancel, setErrorMessage }) {
     const [formData, setFormData] = useState({
-        mail: userData.user.mail,
-        name: userData.user.name,
-        firstName: userData.user.firstName,
-        address: userData.user.address,
-        totalStorageCapacity: userData.totalStorageCapacity,
-        totalStorageUsed: userData.totalStorageUsed,
+        mail: userData.user.mail || '',
+        name: userData.user.name || '',
+        firstName: userData.user.firstName || '',
+        address: userData.user.address || '',
+        totalStorageCapacity: userData.totalStorageCapacity || '',
+        totalStorageUsed: userData.totalStorageUsed || '',
+        currentPassword: userData.user.currentPassword || '',
+        newPassword: userData.user.newPassword || '',
+        confirmPassword: ''
     });
-
-    // ADD PASSWORD FIELDS --------------------------------
 
     const [modifiedFields, setModifiedFields] = useState({});
 
@@ -37,13 +39,31 @@ export default function ModifyProfile({ userData, onUpdateSuccess, onCancel, set
             setErrorMessage('Aucune modification n\'a été effectuée.');
             return;
         }
+
+        if (modifiedFields.newPassword) {
+            if (!validatePassword(formData.newPassword)) {
+                setErrorMessage('Le mot de passe doit contenir au moins 8 caractères, une majuscule, une minuscule, un chiffre et un caractère spécial');
+                return;
+            } else if (formData.newPassword !== formData.confirmPassword) {
+                setErrorMessage('Les mots de passe ne correspondent pas');
+                return;
+            }
+        }
+
+        if (modifiedFields.mail && !validateEmail(formData.mail)) {
+            setErrorMessage('L\'adresse mail n\'est pas valide');
+            return;
+        }
+        
+        console.log('modifiedFields', modifiedFields);
         try {
             const token = localStorage.getItem('token');
             await api.updateUserProfile(token, modifiedFields);
             onUpdateSuccess();
         } catch (error) {
-            setErrorMessage('Une erreur est survenue lors de la mise à jour du profil');
-            console.error(error);
+            const errorMessage = error.message || 'Une erreur est survenue lors de la mise à jour du profil';
+            setErrorMessage(errorMessage);
+            // console.error(error.errors);
         }
     };
 

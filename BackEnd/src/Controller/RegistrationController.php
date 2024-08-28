@@ -54,7 +54,7 @@ class RegistrationController extends AbstractController
 
             $this->logger->info('User registration', $data);
 
-            // Check if the data is present and if its not empty -- UTILISER LE VALIDATOR POUR CE BLOC
+            // Check if the data is present and if its not empty
             if ((!isset($data['name']) || empty($data['name'])) || 
             (!isset($data['firstName']) || empty($data['firstName'])) || 
             (!isset($data['password']) || empty($data['password'])) || 
