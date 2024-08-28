@@ -14,6 +14,7 @@ use Symfony\Component\Finder\Finder;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Entity\File;
+
 use Psr\Log\LoggerInterface;
 
 use App\Entity\User;
@@ -27,11 +28,13 @@ class FileController extends AbstractController
     {
         $this->security = $security;
     }
+   
 
-    /**
-     * Route pour l'ajout de fichier, méthode POST
-     */
-    #[Route('/api/user/add-file', name: 'add_file', methods: ['POST'])]
+/**
+* Route pour l'ajout de fichier, méthode POST
+*/
+
+  #[Route('/api/user/add-file', name: 'add_file', methods: ['POST'])]
     public function addFile(Request $request, SluggerInterface $slugger, EntityManagerInterface $entityManager, LoggerInterface $logger): JsonResponse
     {
         
@@ -99,7 +102,8 @@ class FileController extends AbstractController
         $file->setUploadDate(new \DateTime());
         $file->setFormat($uploadedFile->guessExtension());
         $file->setPath($uploadPath);
-        $file->setUser(null);
+        // Associer l'utilisateur connecté au fichier
+        $file->setUser($user);
 
         // Persist l'entité File
         $logger->info('Attempting to persist file entity');

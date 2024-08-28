@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
 import { Plus, File, Folder } from 'lucide-react';
 import Swal from 'sweetalert2';
-import axios from 'axios';
+import Api from '../../services/API';
 import './AddFile_Folder.css';
+
+const api = new Api();
 
 const AddFile_Folder = () => {
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
@@ -10,7 +12,6 @@ const AddFile_Folder = () => {
     const [isFolderModalOpen, setIsFolderModalOpen] = useState(false);
     const [selectedFile, setSelectedFile] = useState(null);
     const [folderName, setFolderName] = useState('');
-    const [progress, setProgress] = useState(0);
 
     const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
     const openFileModal = () => { setIsFileModalOpen(true); setIsDropdownOpen(false); };
@@ -18,7 +19,6 @@ const AddFile_Folder = () => {
     const closeFileModal = () => {
         setIsFileModalOpen(false);
         setSelectedFile(null);
-        setProgress(0);
     };
     const closeFolderModal = () => {
         setIsFolderModalOpen(false);
@@ -27,10 +27,9 @@ const AddFile_Folder = () => {
 
     const handleFileChange = (event) => {
         setSelectedFile(event.target.files[0]);
-        setProgress(0);
     };
 
-    const handleFileSubmit = (event) => {
+    const handleFileSubmit = async (event) => {
         event.preventDefault();
     
         if (!selectedFile) {
@@ -48,50 +47,21 @@ const AddFile_Folder = () => {
         const formData = new FormData();
         formData.append('file', selectedFile);
     
-        const xhr = new XMLHttpRequest();
-        xhr.open('POST', 'https://127.0.0.1:8000/api/user/add-file', true);
-    
-        const token = localStorage.getItem('token');
-        if (token) {
-            xhr.setRequestHeader('Authorization', `Bearer ${token}`);
-        } else {
-            Swal.fire('Erreur', 'Vous devez être connecté pour uploader un fichier', 'error');
-            return;
+        try {
+            const token = localStorage.getItem('token'); // Récupérer le token du localStorage
+            if (!token) {
+                throw new Error('No authentication token found');
+            }
+            
+            await api.addFile(token, formData);
+            Swal.fire('Succès', 'Fichier uploadé avec succès', 'success');
+            closeFileModal();
+            refreshFileList();
+        } catch (error) {
+            console.error('Erreur lors de l\'upload du fichier:', error);
+            Swal.fire('Erreur', error.message || 'Erreur lors de l\'upload du fichier', 'error');
         }
-        xhr.upload.onprogress = (event) => {
-            if (event.lengthComputable) {
-                const percentComplete = (event.loaded / event.total) * 100;
-                setProgress(percentComplete);
-            }
-        };
-    
-        xhr.onload = () => {
-            console.log(xhr)
-            if (xhr.status === 200) {
-                Swal.fire('Succès', 'Fichier uploadé avec succès', 'success');
-                closeFileModal();
-            } else {
-                let errorMessage = 'Erreur lors de l\'upload du fichier';
-                try {
-                    const errorData = JSON.parse(xhr.responseText);
-                    if (errorData.error) {
-                        errorMessage = errorData.error;
-                    } else if (errorData.message) {
-                        errorMessage = errorData.message;
-                    }
-                } catch (e) {
-                    console.error('Erreur lors de l\'analyse de la réponse d\'erreur:');
-                }
-                Swal.fire('Erreur', errorMessage, 'error');
-            }
-        };
-    
-        xhr.onerror = () => {
-            Swal.fire('Erreur', 'Erreur de réseau', 'error');
-        };
-        
-        xhr.send(formData);
-};
+    };
 
     const handleFolderSubmit = async (event) => {
         event.preventDefault();
@@ -101,17 +71,32 @@ const AddFile_Folder = () => {
         }
 
         try {
-            const response = await axios.post('https://127.0.0.1:8000/api/folders', {
-                name: folderName
-            });
-
+            await api.createFolder(folderName);
             Swal.fire('Succès', 'Dossier créé avec succès', 'success');
             setFolderName('');
             closeFolderModal();
-            // Ici, vous pouvez ajouter une logique pour mettre à jour la liste des dossiers si nécessaire
+            refreshFolderList();
         } catch (error) {
             console.error('Erreur lors de la création du dossier:', error);
             Swal.fire('Erreur', 'Une erreur est survenue lors de la création du dossier', 'error');
+        }
+    };
+
+    const refreshFileList = async () => {
+        try {
+            const files = await api.listFiles();
+            window.dispatchEvent(new CustomEvent('refreshFiles', { detail: files }));
+        } catch (error) {
+            console.error('Erreur lors du rafraîchissement de la liste des fichiers:', error);
+        }
+    };
+
+    const refreshFolderList = async () => {
+        try {
+            const folders = await api.listFolders();
+            window.dispatchEvent(new CustomEvent('refreshFolders', { detail: folders }));
+        } catch (error) {
+            console.error('Erreur lors du rafraîchissement de la liste des dossiers:', error);
         }
     };
 
@@ -153,11 +138,6 @@ const AddFile_Folder = () => {
                                 </div>
                                 <button type="submit" className="upload-button">Uploader le fichier</button>
                             </form>
-                            {progress > 0 && progress < 100 && (
-                                <div className="progress-bar">
-                                    <div className="progress" style={{width: `${progress}%`}}></div>
-                                </div>
-                            )}
                             <button className="close-modal" onClick={closeFileModal}>Fermer</button>
                         </div>
                     </div>

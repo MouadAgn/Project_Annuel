@@ -52,7 +52,6 @@ const PurchaseStorage = ({userName, errorMessage, setErrorMessage}) => {
         try {
             const token = localStorage.getItem('token');
             const data = await api.createPaymentIntent(token);
-           
             setClientSecret(data.clientSecret);
             setShowCheckout(true);
         } catch (error) {

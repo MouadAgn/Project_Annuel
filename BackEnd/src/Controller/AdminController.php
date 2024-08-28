@@ -3,17 +3,14 @@
 namespace App\Controller;
 
 use App\Service\UserStorageService;
+use App\Entity\File;
 
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Routing\Attribute\Route;
-
 use Symfony\Component\HttpFoundation\Request;
 use Symfony\Component\HttpFoundation\JsonResponse;
-
 use App\Entity\User;
-// use App\Entity\File;
-
 use Doctrine\Common\Collections\Criteria;
 use Doctrine\ORM\EntityManagerInterface;
 
@@ -37,33 +34,32 @@ class AdminController extends AbstractController
     {
         /** @var User $user */
         $user = $this->getUser();
-    
         if (!$user) {
             return $this->json(['status' => 'KO', 'message' => 'User not found or not authenticated'], status: JsonResponse::HTTP_FORBIDDEN);
         } else if ($user->getRole() !== User::ROLE_ADMIN) {
             return $this->json(['status' => 'KO', 'message' => 'User is not an admin'], status: JsonResponse::HTTP_FORBIDDEN);
         }
-
+ 
         try {
             $criteria = new Criteria();
             $criteria->where(Criteria::expr()->eq('role', User::ROLE_USER));
-
+ 
             $users = $this->em->getRepository(User::class)->matching($criteria);
-
+ 
             $filterUsers = $users->map(function ($user) {
                 $storageCapacityGB = $this->userStorageService->getUserStorageCapacityInGB($user);
                 $storageUsedGB = $this->userStorageService->calculateTotalStorageUsed($user);
-            
                 // Récupérer les fichiers de l'utilisateur
                 $files = $user->getFiles()->map(function ($file) {
                     return [
                         'id' => $file->getId(),
                         'name' => $file->getNameFile(),
                         'uploadDate' => $file->getUploadDate()->format('Y-m-d H:i:s'),
-                        'weight' => $file->getWeight()
+                        'weight' => $file->getWeight(),
+                        'format' => $file->getFormat()
                     ];
                 });
-
+ 
                 return [
                     'id' => $user->getId(),
                     'name' => $user->getName(),
@@ -74,8 +70,9 @@ class AdminController extends AbstractController
                     'createdDate' => $user->getCreatedDate()->format('Y-m-d'),
                     'files' => $files->toArray()
                 ];
+                
             });
-
+        
             return $this->json($filterUsers);
         } catch (\Exception $e) {
             return new JsonResponse(['status' => 'KO', 'message' => 'Users not found!'], JsonResponse::HTTP_NOT_FOUND);
@@ -104,6 +101,7 @@ class AdminController extends AbstractController
             return new JsonResponse(['status' => 'KO', 'message' => 'User not found!'], JsonResponse::HTTP_NOT_FOUND);
         }
     }
+
 
     /**
      * Route for creating a user
