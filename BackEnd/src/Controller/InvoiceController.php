@@ -158,7 +158,7 @@ class InvoiceController extends AbstractController
         $pdf->writeHTML($htmlContent);
 
             // Define the invoices directory within the public directory
-            $invoicesDir = $this->getParameter('kernel.project_dir') . '/invoices';
+            $invoicesDir = $this->getParameter('kernel.project_dir') . '/public/invoices';
             if (!is_dir($invoicesDir)) {
                 mkdir($invoicesDir, 0775, true);
             }
