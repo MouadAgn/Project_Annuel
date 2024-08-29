@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, File, Folder } from 'lucide-react';
 import Swal from 'sweetalert2';
 import Api from '../../services/API';
@@ -7,48 +7,74 @@ import './AddFile_Folder.css';
 const api = new Api();
 
 const AddFile_Folder = () => {
+    const [folders, setFolders] = useState([]);
+    const [files, setFiles] = useState([]);
     const [isDropdownOpen, setIsDropdownOpen] = useState(false);
     const [isFileModalOpen, setIsFileModalOpen] = useState(false);
     const [isFolderModalOpen, setIsFolderModalOpen] = useState(false);
     const [selectedFile, setSelectedFile] = useState(null);
     const [folderName, setFolderName] = useState('');
+    const [refresh, setRefresh] = useState(0);
+
+    // Fonction pour forcer le rafraîchissement
+    const forceUpdate = () => setRefresh(refresh + 1);
+
+    useEffect(() => {
+        fetchFolders();
+    }, [refresh]);  // Dépendance sur `refresh` pour déclencher un nouveau fetch
+
+    const fetchFolders = async () => {
+        try {
+            const response = await api.getFolders();
+            console.log("Fetched Folders: ", response);  // Log pour vérification
+            setFolders(response);
+        } catch (error) {
+            console.error('An error occurred while loading folders:', error);
+            Swal.fire('Erreur!', 'Une erreur est survenue lors du chargement des dossiers.', 'error');
+        }
+    };
+
+    useEffect(() => {
+        fetchFiles();
+    }, [refresh]);  // Dépendance sur `refresh` pour déclencher un nouveau fetch
+
+    const fetchFiles = async () => {
+        try {
+            const fetchedFiles = await api.getFiles();
+            console.log("Fetched Files: ", fetchedFiles);  // Log pour vérification
+            setFiles(fetchedFiles);
+        } catch (error) {
+            console.error('Error fetching files:', error);
+            Swal.fire('Erreur!', 'Une erreur est survenue lors du chargement des fichiers.', 'error');
+        }
+    };
 
     const toggleDropdown = () => setIsDropdownOpen(!isDropdownOpen);
     const openFileModal = () => { setIsFileModalOpen(true); setIsDropdownOpen(false); };
     const openFolderModal = () => { setIsFolderModalOpen(true); setIsDropdownOpen(false); };
-    const closeFileModal = () => {
-        setIsFileModalOpen(false);
-        setSelectedFile(null);
-    };
-    const closeFolderModal = () => {
-        setIsFolderModalOpen(false);
-        setFolderName('');
-    };
+    const closeFileModal = () => { setIsFileModalOpen(false); setSelectedFile(null); };
+    const closeFolderModal = () => { setIsFolderModalOpen(false); setFolderName(''); };
 
-    const handleFileChange = (event) => {
-        setSelectedFile(event.target.files[0]);
-    };
+    const handleFileChange = (event) => { setSelectedFile(event.target.files[0]); };
 
     const handleFileSubmit = async (event) => {
         event.preventDefault();
-    
         if (!selectedFile) {
             Swal.fire('Erreur', 'Veuillez sélectionner un fichier', 'error');
             return;
         }
-    
+
         const maxFileSize = 20 * 1024 * 1024 * 1024; // 20 Go en octets
-    
         if (selectedFile.size > maxFileSize) {
             Swal.fire('Erreur', 'Le fichier ne doit pas dépasser 20 Go', 'error');
             return;
         }
-    
+
         const formData = new FormData();
         formData.append('file', selectedFile);
-    
+
         try {
-            const token = localStorage.getItem('token'); // Récupérer le token du localStorage
+            const token = localStorage.getItem('token');
             if (!token) {
                 throw new Error('No authentication token found');
             }
@@ -56,7 +82,8 @@ const AddFile_Folder = () => {
             await api.addFile(token, formData);
             Swal.fire('Succès', 'Fichier uploadé avec succès', 'success');
             closeFileModal();
-            refreshFileList();
+            fetchFiles();  // Fetch updated file list
+            forceUpdate();  // Forcer la mise à jour du composant
         } catch (error) {
             console.error('Erreur lors de l\'upload du fichier:', error);
             Swal.fire('Erreur', error.message || 'Erreur lors de l\'upload du fichier', 'error');
@@ -75,28 +102,11 @@ const AddFile_Folder = () => {
             Swal.fire('Succès', 'Dossier créé avec succès', 'success');
             setFolderName('');
             closeFolderModal();
-            refreshFolderList();
+            fetchFolders(); // Refresh the folders list after successful folder creation
+            forceUpdate();  // Forcer la mise à jour du composant
         } catch (error) {
             console.error('Erreur lors de la création du dossier:', error);
             Swal.fire('Erreur', 'Une erreur est survenue lors de la création du dossier', 'error');
-        }
-    };
-
-    const refreshFileList = async () => {
-        try {
-            const files = await api.listFiles();
-            window.dispatchEvent(new CustomEvent('refreshFiles', { detail: files }));
-        } catch (error) {
-            console.error('Erreur lors du rafraîchissement de la liste des fichiers:', error);
-        }
-    };
-
-    const refreshFolderList = async () => {
-        try {
-            const folders = await api.listFolders();
-            window.dispatchEvent(new CustomEvent('refreshFolders', { detail: folders }));
-        } catch (error) {
-            console.error('Erreur lors du rafraîchissement de la liste des dossiers:', error);
         }
     };
 

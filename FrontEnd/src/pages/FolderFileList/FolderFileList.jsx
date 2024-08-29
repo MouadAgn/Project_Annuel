@@ -72,7 +72,7 @@ const FolderFileList = () => {
   const handleFolderDelete = async (folderId) => {
     const result = await Swal.fire({
       title: 'Êtes-vous sûr ?',
-      text: "Ce dossier et tous ses fichiers seront supprimés définitivement !",
+      text: " Verifiez si y'a pas des fichier dans votre dossier!",
       icon: 'warning',
       showCancelButton: true,
       confirmButtonText: 'Oui, supprimez-le !',
@@ -84,10 +84,10 @@ const FolderFileList = () => {
         await api.deleteFolder(folderId);
         setFolders(folders.filter(folder => folder.id !== folderId));
         closeModal();
-        Swal.fire('Supprimé', 'Votre dossier et tous ses fichiers ont été supprimés.', 'success');
+        Swal.fire('Supprimé', 'Votre dossier a été supprimmé.', 'success');
         fetchFolders();
       } catch (err) {
-        Swal.fire('Erreur!', 'Une erreur est survenue lors de la suppression du dossier.', 'error');
+        Swal.fire('Erreur!', 'Videz votre dossier.', 'error');
       }
     }
   };
